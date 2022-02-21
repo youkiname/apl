@@ -1,0 +1,19 @@
+{
+  "name": "apl",
+  "version": "1.0.0",
+  "description": "Handmade Programming Language",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx tsc index.ts && node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youkiname/apl.git"
+  },
+  "author": "youkiname",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/youkiname/apl/issues"
+  },
+  "homepage": "https://github.com/youkiname/apl#readme"
+}
