@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/youkiname/apl/issues"
   },
-  "homepage": "https://github.com/youkiname/apl#readme"
+  "homepage": "https://github.com/youkiname/apl#readme",
+  "dependencies": {
+    "typescript": "^4.6.2"
+  }
 }
