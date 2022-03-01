@@ -13,6 +13,10 @@ while (a > 0) {
         continue
     }
 }
+#!
+multiline comment
+multiline comment
+!#
 a = a * 5 / 3
 # its my comment
 # really useful comment

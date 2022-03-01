@@ -43,6 +43,7 @@ export const tokenTypesList = {
     "CLOSE_BRACKETS": new TokenType("CLOSE_BRACKETS", "\\)"),
     "OPEN_STATEMENT": new TokenType("OPEN_STATEMENT", "{"),
     "CLOSE_STATEMENT": new TokenType("CLOSE_STATEMENT", "}"),
+    "MULTI_COMMENT": new TokenType("MULTI_COMMENT", "#![\\s\\S]*!#", true),
     "COMMENT": new TokenType("COMMENT", "#.*\\n", true),
     "STRING": new TokenType("STRING", "\\'.*\\'"),
     "VARIABLE": new TokenType("VARIABLE", "[a-z_]+"),
