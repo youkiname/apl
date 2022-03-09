@@ -39,10 +39,10 @@ export const tokenTypesList = {
     "IF_STATEMENT": new TokenType("IF_STATEMENT", "if"),
     "ELSE_STATEMENT": new TokenType("ELSE_STATEMENT", "else"),
     "INIT_FUNCTION": new TokenType("INIT_FUNCTION", "fun"),
-    "OPEN_BRACKETS": new TokenType("OPEN_BRACKETS", "\\("),
-    "CLOSE_BRACKETS": new TokenType("CLOSE_BRACKETS", "\\)"),
-    "OPEN_STATEMENT": new TokenType("OPEN_STATEMENT", "{"),
-    "CLOSE_STATEMENT": new TokenType("CLOSE_STATEMENT", "}"),
+    "OPEN_EXPR": new TokenType("OPEN_EXPR", "\\("),
+    "CLOSE_EXPR": new TokenType("CLOSE_EXPR", "\\)"),
+    "OPEN_BLOCK": new TokenType("OPEN_BLOCK", "{"),
+    "CLOSE_BLOCK": new TokenType("CLOSE_BLOCK", "}"),
     "MULTI_COMMENT": new TokenType("MULTI_COMMENT", "#![\\s\\S]*!#", true),
     "COMMENT": new TokenType("COMMENT", "#.*\\n", true),
     "STRING": new TokenType("STRING", "\\'.*\\'"),
@@ -68,6 +68,10 @@ export class Token {
             return tokenValue
         }
         return tokenValue.slice(1, tokenValue.length - 1)
+    }
+
+    public toString(): string {
+        return this.type.name
     }
 }
 
