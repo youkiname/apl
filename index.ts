@@ -2,7 +2,10 @@ import { Lexer } from "./lexer";
 import { Grammar } from "./syntax-grammar";
 
 const code = `
-a = 12 + 1 * 2
+a = 10
+if (10) {
+    a = a + 3
+}
 `
 
 const lexer = new Lexer(code)
@@ -13,4 +16,4 @@ for (let token of tokens) {
 }
 
 const grammar = new Grammar(tokens)
-grammar.getAST()
+const ast = grammar.getAST()
