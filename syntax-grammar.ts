@@ -37,6 +37,9 @@ export class Relation extends Statement {
 export class Expression extends Statement {
 }
 
+export class PreAssign extends Statement {
+}
+
 export class Assign extends Statement {
 }
 
@@ -44,6 +47,9 @@ export class Block extends Statement {
 }
 
 export class If extends Statement {
+}
+
+export class While extends Statement {
 }
 
 
@@ -76,11 +82,14 @@ const RULES = [
     new Rule(["{", "Seq", "}"], args => new Block(args)),
 
     new Rule(["IF", "Expression", "Block"], args => new If(args)),
+    new Rule(["WHILE", "Expression", "Block"], args => new While(args)),
 
-    new Rule(["VARIABLE", "ASSIGN", "Expression", "NEWLINE"], args => new Assign(args)),
+    new Rule(["VARIABLE", "ASSIGN"], args => new PreAssign(args)),
+    new Rule(["PreAssign", "Expression", "NEWLINE"], args => new Assign(args)),
 
     new Rule(["(", "Expression", ")"], args => new Factor(args)),
     new Rule(["NUMBER"], args => new Factor(args)),
+    new Rule(["VARIABLE"], args => new Factor(args)),
 
     new Rule(["Expression", "STAR", "Term"], args => new Term(args)),
     new Rule(["Expression", "SLASH", "Term"], args => new Term(args)),
@@ -92,15 +101,23 @@ const RULES = [
 
     new Rule(["Expression", "LT", "Expression"], args => new Relation(args)),
     new Rule(["Expression", "GT", "Expression"], args => new Relation(args)),
+    new Rule(["Expression", "OR", "Expression"], args => new Relation(args)),
+    new Rule(["Expression", "AND", "Expression"], args => new Relation(args)),
+    new Rule(["Expression", "EQUAL", "Expression"], args => new Relation(args)),
+    new Rule(["Expression", "NOT_EQUAL", "Expression"], args => new Relation(args)),
 
 
     new Rule(["Add"], args => new Expression(args)),
     new Rule(["Relation"], args => new Expression(args)),
+    new Rule(["STRING"], args => new Expression(args)),
 
 
 
     new Rule(["Assign"], args => new Statement(args)),
     new Rule(["If"], args => new Statement(args)),
+    new Rule(["While"], args => new Statement(args)),
+    new Rule(["CONTINUE"], args => new Statement(args)),
+    new Rule(["BREAK"], args => new Statement(args)),
 
     new Rule(["Statement"], args => new Seq(args)),
     new Rule(["Seq", "Seq"], args => new Seq(args)),

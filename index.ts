@@ -3,9 +3,21 @@ import { Grammar } from "./syntax-grammar";
 
 const code = `
 a = 10
-if (10) {
-    a = a + 3
+
+if (a == 5) {
+    a = b - 2 + c / 34
 }
+
+while (a > 0) {
+    if (a) {
+        continue
+    }
+    if (b > 0 or a < 10) {
+        break
+    }
+    b = 'Hello'
+}
+greeting = 'HI'
 `
 
 const lexer = new Lexer(code)
