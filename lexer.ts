@@ -38,6 +38,7 @@ export const tokenTypesList = {
     "WHILE": new TokenType("WHILE", "while"),
     "IF": new TokenType("IF", "if"),
     "FUN": new TokenType("FUN", "fun"),
+    "FUN_NAME": new TokenType("FUN_NAME", "[a-z_]+\\("),
     "OPEN_EXPR": new TokenType("(", "\\("),
     "CLOSE_EXPR": new TokenType(")", "\\)"),
     "OPEN_BLOCK": new TokenType("{", "{"),
@@ -60,6 +61,10 @@ export class Token {
         if (type.name == "STRING") {
             this.value = this.validateStringValue(value)
         }
+    }
+
+    public eval(): number {
+        return parseInt(this.value);
     }
 
     public validateStringValue(tokenValue: string): string {
