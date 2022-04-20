@@ -4,7 +4,7 @@
   "description": "Handmade Programming Language",
   "main": "index.js",
   "scripts": {
-    "start": "npx tsc index.ts && node index.js"
+    "start": "npx tsc index.ts && node index.js && fasm main.asm && main.exe"
   },
   "repository": {
     "type": "git",
@@ -18,5 +18,8 @@
   "homepage": "https://github.com/youkiname/apl#readme",
   "dependencies": {
     "typescript": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.24"
   }
 }

@@ -27,6 +27,8 @@ export const tokenTypesList = {
     "AND": new TokenType("AND", "and"),
     "EQUAL": new TokenType("EQUAL", "=="),
     "NOT_EQUAL": new TokenType("NOT_EQUAL", "!="),
+    "STRING": new TokenType("STRING", "string"),
+    "INT": new TokenType("INT", "int"),
     "ASSIGN": new TokenType("ASSIGN", "="),
     "PLUS": new TokenType("PLUS", "\\+"),
     "MINUS": new TokenType("MINUS", "-"),
@@ -37,6 +39,8 @@ export const tokenTypesList = {
     "CONTINUE": new TokenType("CONTINUE", "continue"),
     "WHILE": new TokenType("WHILE", "while"),
     "IF": new TokenType("IF", "if"),
+    "ELSE": new TokenType("ELSE", "else"),
+    "PRINT": new TokenType("PRINT", "print"),
     "FUN": new TokenType("FUN", "fun"),
     "FUN_NAME": new TokenType("FUN_NAME", "[a-z_]+\\("),
     "OPEN_EXPR": new TokenType("(", "\\("),
@@ -45,8 +49,8 @@ export const tokenTypesList = {
     "CLOSE_BLOCK": new TokenType("}", "}"),
     "MULTI_COMMENT": new TokenType("MULTI_COMMENT", "#![\\s\\S]*!#", true),
     "COMMENT": new TokenType("COMMENT", "#.*\\n", true),
-    "STRING": new TokenType("STRING", "\\'.*\\'"),
-    "VARIABLE": new TokenType("VARIABLE", "[a-z_]+"),
+    "STRING_CONST": new TokenType("STRING_CONST", "\\'.*\\'"),
+    "VARIABLE": new TokenType("VARIABLE", "[a-z_]+[1-9]*"),
 }
 
 
@@ -63,8 +67,8 @@ export class Token {
         }
     }
 
-    public eval(): number {
-        return parseInt(this.value);
+    public eval(): string {
+        return this.value;
     }
 
     public validateStringValue(tokenValue: string): string {

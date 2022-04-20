@@ -1,4 +1,6 @@
+import { CodeBuffer } from "./code-generator"
 import { Token } from "./lexer"
+import { Env } from "./env-table"
 
 
 function isArrayEquals(a: string[], b: string[]): boolean {
@@ -18,9 +20,48 @@ export class Statement {
     public toString(): string {
         return this.constructor['name']
     }
+
+    public eval() {
+        for (let arg of this.args) {
+            arg.eval();
+        }
+        return ''
+    }
+}
+
+export class VariableType extends Statement {
+    public name: string
+
+    constructor (name: string) {
+        super()
+        this.name = name
+    }
+}
+
+export class VariableInit extends Statement {
+    public type: string
+    public name: string
+    constructor (type: VariableType, name: Token) {
+        super()
+        this.type = type.name
+        this.name = name.value
+    }
 }
 
 export class Factor extends Statement {
+    private brackets = false
+
+    constructor (args: Array<Statement | Token> = [], brackets = false) {
+        super(args)
+        this.brackets = brackets
+    }
+
+    public eval() {
+        if (this.brackets) {
+            return "(" + this.args[0].eval() + ")"
+        }
+        return this.args[0].eval()
+    }
 }
 
 export class Term extends Statement {
@@ -33,6 +74,15 @@ export class Term extends Statement {
         this.left = left
         this.sign = sign
         this.right = right
+    }
+
+    public eval() {
+        if (!this.sign) {
+            return this.left.eval()
+        }
+        const leftValue = this.left.eval()
+        const rightValue = this.right.eval()
+        return leftValue.toString() + this.sign + rightValue.toString()
     }
 }
 
@@ -47,6 +97,15 @@ export class Add extends Statement {
         this.sign = sign
         this.right = right
     }
+
+    public eval() {
+        if (!this.sign) {
+            return this.left.eval()
+        }
+        const leftValue = this.left.eval()
+        const rightValue = this.right.eval()
+        return leftValue.toString() + this.sign + rightValue.toString()
+    }
 }
 
 export class Relation extends Statement {
@@ -60,28 +119,77 @@ export class Relation extends Statement {
         this.sign = sign
         this.right = right
     }
+
+    public eval() {
+        CodeBuffer.emit(this.left.eval() + this.sign + this.right.eval())
+        return ''
+    }
 }
 
 export class Expression extends Statement {
+    public eval() {
+        return this.args[0].eval()
+    }
 }
 
 export class PreAssign extends Statement {
-    public variable
+    public variable: VariableInit
 
-    constructor (variable: Token) {
+    constructor (variable: VariableInit) {
         super()
-        this.variable = variable.value
+        this.variable = variable
+    }
+}
+
+export class PreReAssign extends Statement {
+    public variableName: string
+
+    constructor (variableName: string) {
+        super()
+        this.variableName = variableName
     }
 }
 
 export class Assign extends Statement {
-    private variable: string
+    private variable: VariableInit
     private expression: Expression
 
     constructor (preAssign: PreAssign, expression: Expression) {
         super()
         this.variable = preAssign.variable
         this.expression = expression
+
+        Env.add({ type: preAssign.variable.type, name: this.variable.name, value: expression.eval() })
+    }
+
+    public eval() {
+        const expressionValue = this.expression.eval()
+        if (this.variable.type == "int") {
+            CodeBuffer.emit(this.variable.name + " = " + expressionValue + "\n")
+        }
+        return '';
+    }
+}
+
+export class ReAssign extends Statement {
+    private variable: any
+    private expression: Expression
+
+    constructor (preAssign: PreReAssign, expression: Expression) {
+        super()
+        this.expression = expression
+        this.variable = Env.get(preAssign.variableName)
+        if (!this.variable) {
+            throw new Error(`Undefined variable '${preAssign.variableName}'`);
+        }
+    }
+
+    public eval() {
+        const expressionValue = this.expression.eval()
+        if (this.variable.type == "int") {
+            CodeBuffer.emit(this.variable.name + " = " + expressionValue + "\n")
+        }
+        return '';
     }
 }
 
@@ -101,6 +209,11 @@ export class Block extends Statement {
         super()
         this.statement = statement
     }
+
+    public eval() {
+        this.statement.eval()
+        return '';
+    }
 }
 
 export class If extends Statement {
@@ -112,6 +225,39 @@ export class If extends Statement {
         this.expression = expression
         this.block = block
     }
+
+    public eval() {
+        CodeBuffer.emit("if ")
+        this.expression.eval()
+        CodeBuffer.emit("\n")
+        this.block.eval()
+        CodeBuffer.emit("end if\n")
+        return ""
+    }
+}
+
+export class IfElse extends Statement {
+    private expression: Expression
+    private block: Block
+    private elseBlock: Block
+
+    constructor (expression: Expression, block: Block, elseBlock: Block) {
+        super()
+        this.expression = expression
+        this.block = block
+        this.elseBlock = elseBlock
+    }
+
+    public eval() {
+        CodeBuffer.emit("if ")
+        this.expression.eval()
+        CodeBuffer.emit("\n")
+        this.block.eval()
+        CodeBuffer.emit("else\n")
+        this.elseBlock.eval()
+        CodeBuffer.emit("end if\n")
+        return ""
+    }
 }
 
 export class While extends Statement {
@@ -122,6 +268,15 @@ export class While extends Statement {
         super()
         this.expression = expression
         this.block = block
+    }
+
+    public eval() {
+        CodeBuffer.emit("while ")
+        this.expression.eval()
+        CodeBuffer.emit("\n")
+        this.block.eval()
+        CodeBuffer.emit("end while\n")
+        return ""
     }
 }
 
@@ -144,6 +299,27 @@ export class CallFunction extends Statement {
     constructor (funName: Token) {
         super()
         this.name = funName.value
+    }
+}
+
+export class Print extends Statement {
+    private variable: any
+
+    constructor (variableName: string) {
+        super()
+        this.variable = Env.get(variableName);
+        if (!this.variable) {
+            throw new Error(`Undefined variable '${variableName}'`);
+        }
+    }
+
+    public eval() {
+        if (this.variable.type == "string") {
+            CodeBuffer.emit("cinvoke printf, formatstr, " + this.variable.name + "\n")
+        } else {
+            CodeBuffer.emit("cinvoke printf, formatint, " + this.variable.name + "\n")
+        }
+        return '';
     }
 }
 
@@ -174,25 +350,29 @@ export class Rule {
 }
 
 const RULES = [
+    new Rule(["WHILE", "Expression", "Block"], args => new While(args[1] as Expression, args[2] as Block)),
+    new Rule(["IF", "Expression", "Block"], args => new If(args[1] as Expression, args[2] as Block)),
+
     new Rule(["{", "Statement", "}"], args => new Block(args[1] as Statement)),
 
-    new Rule(["IF", "Expression", "Block"], args => new If(args[1] as Expression, args[2] as Block)),
-    new Rule(["WHILE", "Expression", "Block"], args => new While(args[1] as Expression, args[2] as Block)),
-    new Rule(["FUN", "FUN_NAME", "Expression", ")", "Block"], args => new Function(args[1] as Token, args[2] as Expression, args[4] as Block)),
-    new Rule(["FUN_NAME", ")"], args => new CallFunction(args[0] as Token)),
+    new Rule(["STRING"], args => new VariableType('string')),
+    new Rule(["INT"], args => new VariableType('int')),
+    new Rule(["VariableType", "VARIABLE"], args => new VariableInit(args[0] as VariableType, args[1] as Token)),
 
-    new Rule(["RETURN", "Expression"], args => new Return(args[1] as Expression)),
-    new Rule(["VARIABLE", "ASSIGN"], args => new PreAssign(args[0] as Token)),
+
+    new Rule(["VariableInit", "ASSIGN"], args => new PreAssign(args[0] as VariableInit)),
+    new Rule(["VARIABLE", "ASSIGN"], args => new PreReAssign(args[0].eval())),
     new Rule(["PreAssign", "Expression", "NEWLINE"], args => new Assign(args[0] as PreAssign, args[1] as Expression)),
+    new Rule(["PreReAssign", "Expression", "NEWLINE"], args => new ReAssign(args[0] as PreReAssign, args[1] as Expression)),
+    new Rule(["PRINT", "(", "VARIABLE", ")", "NEWLINE"], args => new Print(args[2].eval())),
 
-    new Rule(["(", "Expression", ")"], args => new Factor([args[1]])),
-    new Rule(["CallFunction"], args => new Factor(args)),
+    new Rule(["(", "Expression", ")"], args => new Factor([args[1]], true)),
     new Rule(["NUMBER"], args => new Factor(args)),
     new Rule(["VARIABLE"], args => new Factor(args)),
-    new Rule(["STRING"], args => new Factor(args)),
+    new Rule(["STRING_CONST"], args => new Factor(args)),
 
-    new Rule(["Expression", "STAR", "Term"], args => new Term(args[0] as Expression, "*", args[2] as Statement)),
-    new Rule(["Expression", "SLASH", "Term"], args => new Term(args[0] as Expression, "/", args[2] as Statement)),
+    new Rule(["Expression", "STAR", "Expression"], args => new Term(args[0] as Expression, "*", args[2] as Statement)),
+    new Rule(["Expression", "SLASH", "Expression"], args => new Term(args[0] as Expression, "/", args[2] as Statement)),
     new Rule(["Factor"], args => new Term(args[0] as Statement, null, null)),
 
     new Rule(["Expression", "PLUS", "Add"], args => new Add(args[0] as Expression, "+", args[2] as Statement)),
@@ -200,22 +380,16 @@ const RULES = [
     new Rule(["Term"], args => new Add(args[0] as Term, null, null)),
 
     new Rule(["Expression", "LT", "Expression"], args => new Relation(args[0] as Expression, "<", args[2] as Expression)),
-    new Rule(["Expression", "GT", "Expression"], args => new Relation(args[0] as Expression, "<", args[2] as Expression)),
-    new Rule(["Expression", "OR", "Expression"], args => new Relation(args[0] as Expression, "or", args[2] as Expression)),
-    new Rule(["Expression", "AND", "Expression"], args => new Relation(args[0] as Expression, "and", args[2] as Expression)),
-    new Rule(["Expression", "EQUAL", "Expression"], args => new Relation(args[0] as Expression, "==", args[2] as Expression)),
-    new Rule(["Expression", "NOT_EQUAL", "Expression"], args => new Relation(args[0] as Expression, "!=", args[2] as Expression)),
+    new Rule(["Expression", "GT", "Expression"], args => new Relation(args[0] as Expression, ">", args[2] as Expression)),
 
-    new Rule(["Add"], args => new Expression(args)),
     new Rule(["Relation"], args => new Expression(args)),
+    new Rule(["Add"], args => new Expression(args)),
 
-    new Rule(["Function"], args => new Statement(args)),
     new Rule(["Assign"], args => new Statement(args)),
-    new Rule(["If"], args => new Statement(args)),
+    new Rule(["ReAssign"], args => new Statement(args)),
     new Rule(["While"], args => new Statement(args)),
-    new Rule(["Return"], args => new Statement(args)),
-    new Rule(["CONTINUE"], args => new Statement(args)),
-    new Rule(["BREAK"], args => new Statement(args)),
+    new Rule(["If"], args => new Statement(args)),
+    new Rule(["Print"], args => new Statement(args)),
     new Rule(["Statement", "Statement"], args => new Statement(args)),
     new Rule(["NEWLINE"], args => new Statement(args)),
 ]
