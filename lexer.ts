@@ -43,6 +43,7 @@ export const tokenTypesList = {
     "PRINT": new TokenType("PRINT", "print"),
     "FUN": new TokenType("FUN", "fun"),
     "FUN_NAME": new TokenType("FUN_NAME", "[a-z_]+\\("),
+    "FUN_PARAMS": new TokenType("FUN_PARAMS", "([a-z_]+|(,| ))*\\)"),
     "OPEN_EXPR": new TokenType("(", "\\("),
     "CLOSE_EXPR": new TokenType(")", "\\)"),
     "OPEN_BLOCK": new TokenType("{", "{"),

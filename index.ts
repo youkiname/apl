@@ -4,16 +4,10 @@ import { Generator } from "./code-generator";
 
 const code = `
 int a = 10
-string msg = 'You are cool'
-
-while (a > 0) {
-    print(a)
-    a = a - 1
-    if (a < 3) {
-        print(msg)
-    }
+fun say_hello(name) {
+    string msg = 'hello '
+    print(msg)
 }
-
 `
 
 const lexer = new Lexer(code)

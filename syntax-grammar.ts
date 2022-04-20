@@ -10,6 +10,7 @@ function isArrayEquals(a: string[], b: string[]): boolean {
     return a.map((s, i) => s == b[i]).every(status => status === true)
 }
 
+let env = new Env()
 
 export class Statement {
     public args: Array<Statement | Token>
@@ -158,12 +159,11 @@ export class Assign extends Statement {
         super()
         this.variable = preAssign.variable
         this.expression = expression
-
-        Env.add({ type: preAssign.variable.type, name: this.variable.name, value: expression.eval() })
     }
 
     public eval() {
         const expressionValue = this.expression.eval()
+        env.add({ type: this.variable.type, name: this.variable.name, value: expressionValue })
         if (this.variable.type == "int") {
             CodeBuffer.emit(this.variable.name + " = " + expressionValue + "\n")
         }
@@ -172,22 +172,23 @@ export class Assign extends Statement {
 }
 
 export class ReAssign extends Statement {
-    private variable: any
+    private variableName: string
     private expression: Expression
 
     constructor (preAssign: PreReAssign, expression: Expression) {
         super()
         this.expression = expression
-        this.variable = Env.get(preAssign.variableName)
-        if (!this.variable) {
-            throw new Error(`Undefined variable '${preAssign.variableName}'`);
-        }
+        this.variableName = preAssign.variableName
     }
 
     public eval() {
+        let variable = env.get(this.variableName)
+        if (!variable) {
+            throw new Error(`Undefined variable '${this.variableName}'`);
+        }
         const expressionValue = this.expression.eval()
-        if (this.variable.type == "int") {
-            CodeBuffer.emit(this.variable.name + " = " + expressionValue + "\n")
+        if (variable.type == "int") {
+            CodeBuffer.emit(variable.name + " = " + expressionValue + "\n")
         }
         return '';
     }
@@ -282,14 +283,22 @@ export class While extends Statement {
 
 export class Function extends Statement {
     private name: string
-    private params: Expression
+    private params: string[]
     private block: Block
 
-    constructor (funName: Token, params: Expression, block: Block) {
+    constructor (funName: Token, params: Token, block: Block) {
         super()
-        this.name = funName.value
-        this.params = params
+        this.name = funName.value.slice(0, -1)
+        //  remove spaces, remove end bracket ')' and split params to array
+        this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
         this.block = block
+    }
+
+    public eval() {
+        CodeBuffer.emit(this.name + ":\n")
+        this.block.eval()
+        CodeBuffer.emit("end " + this.name + "\n")
+        return ""
     }
 }
 
@@ -303,21 +312,24 @@ export class CallFunction extends Statement {
 }
 
 export class Print extends Statement {
-    private variable: any
+    private params: string[]
 
-    constructor (variableName: string) {
+    constructor (params: Token) {
         super()
-        this.variable = Env.get(variableName);
-        if (!this.variable) {
-            throw new Error(`Undefined variable '${variableName}'`);
-        }
+        this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
     }
 
     public eval() {
-        if (this.variable.type == "string") {
-            CodeBuffer.emit("cinvoke printf, formatstr, " + this.variable.name + "\n")
-        } else {
-            CodeBuffer.emit("cinvoke printf, formatint, " + this.variable.name + "\n")
+        for (let variableName of this.params) {
+            let variable = env.get(variableName);
+            if (!variable) {
+                throw new Error(`Undefined variable '${variableName}'`);
+            }
+            if (variable.type == "string") {
+                CodeBuffer.emit("cinvoke printf, formatstr, " + variable.name + "\n")
+            } else {
+                CodeBuffer.emit("cinvoke printf, formatint, " + variable.name + "\n")
+            }
         }
         return '';
     }
@@ -350,6 +362,9 @@ export class Rule {
 }
 
 const RULES = [
+    new Rule(["FUN", "FUN_NAME", "FUN_PARAMS", "Block"], args => new Function(args[1] as Token, args[2] as Token, args[3] as Block)),
+
+
     new Rule(["WHILE", "Expression", "Block"], args => new While(args[1] as Expression, args[2] as Block)),
     new Rule(["IF", "Expression", "Block"], args => new If(args[1] as Expression, args[2] as Block)),
 
@@ -364,7 +379,7 @@ const RULES = [
     new Rule(["VARIABLE", "ASSIGN"], args => new PreReAssign(args[0].eval())),
     new Rule(["PreAssign", "Expression", "NEWLINE"], args => new Assign(args[0] as PreAssign, args[1] as Expression)),
     new Rule(["PreReAssign", "Expression", "NEWLINE"], args => new ReAssign(args[0] as PreReAssign, args[1] as Expression)),
-    new Rule(["PRINT", "(", "VARIABLE", ")", "NEWLINE"], args => new Print(args[2].eval())),
+    new Rule(["PRINT", "(", "FUN_PARAMS", "NEWLINE"], args => new Print(args[2] as Token)),
 
     new Rule(["(", "Expression", ")"], args => new Factor([args[1]], true)),
     new Rule(["NUMBER"], args => new Factor(args)),
@@ -385,6 +400,7 @@ const RULES = [
     new Rule(["Relation"], args => new Expression(args)),
     new Rule(["Add"], args => new Expression(args)),
 
+    new Rule(["Function"], args => new Statement(args)),
     new Rule(["Assign"], args => new Statement(args)),
     new Rule(["ReAssign"], args => new Statement(args)),
     new Rule(["While"], args => new Statement(args)),
