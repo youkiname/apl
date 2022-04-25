@@ -58,10 +58,19 @@ export class Factor extends Statement {
     }
 
     public eval() {
-        if (this.brackets) {
-            return "(" + this.args[0].eval() + ")"
+        let tempVariable = env.getTemp()
+        let factor = this.args[0].eval()
+        if (this.isNumeric(factor)) {
+            CodeBuffer.emit(`mov [${tempVariable}], ${factor}\n`)
+        } else {
+            CodeBuffer.emit(`mov eax, [${factor}]\n`)
+            CodeBuffer.emit(`mov [${tempVariable}], eax\n`)
         }
-        return this.args[0].eval()
+        return tempVariable
+    }
+
+    private isNumeric(s: string): boolean {
+        return !isNaN(+s)
     }
 }
 
@@ -81,9 +90,17 @@ export class Term extends Statement {
         if (!this.sign) {
             return this.left.eval()
         }
-        const leftValue = this.left.eval()
-        const rightValue = this.right.eval()
-        return leftValue.toString() + this.sign + rightValue.toString()
+
+        const leftName = this.left.eval()
+        const rightName = this.right.eval()
+
+        CodeBuffer.emit("; ---MULTIPLY---\n")
+        CodeBuffer.emit(`mov eax, [${leftName}]\n`)
+        CodeBuffer.emit(`imul eax, [${rightName}]\n`)
+        CodeBuffer.emit(`mov [${leftName}], eax\n`)
+        env.freeTemp(rightName)
+
+        return leftName
     }
 }
 
@@ -103,9 +120,16 @@ export class Add extends Statement {
         if (!this.sign) {
             return this.left.eval()
         }
-        const leftValue = this.left.eval()
-        const rightValue = this.right.eval()
-        return leftValue.toString() + this.sign + rightValue.toString()
+
+        const leftName = this.left.eval()
+        const rightName = this.right.eval()
+        CodeBuffer.emit("; ---ADD---\n")
+        CodeBuffer.emit(`mov eax, [${leftName}]\n`)
+        CodeBuffer.emit(`add eax, [${rightName}]\n`)
+        CodeBuffer.emit(`mov [${leftName}], eax\n`)
+        env.freeTemp(rightName)
+
+        return leftName
     }
 }
 
@@ -165,11 +189,14 @@ export class Assign extends Statement {
         if (env.getDirectly(this.variable.name)) {
             throw new Error(`Variable '${this.variable.name}' already defined`);
         }
-        const expressionValue = this.expression.eval()
-        env.add({ type: this.variable.type, name: this.variable.name, value: expressionValue })
-        if (this.variable.type == "int") {
-            CodeBuffer.emit(this.variable.name + " = " + expressionValue + "\n")
-        }
+        const expressionResultName = this.expression.eval()
+        env.add({ type: this.variable.type, name: this.variable.name, value: "?" })
+
+        CodeBuffer.emit("; ---ASSIGN---\n")
+        CodeBuffer.emit(`mov eax, [${expressionResultName}]\n`)
+        CodeBuffer.emit(`mov [${this.variable.name}], eax\n`)
+        env.freeTemp(expressionResultName);
+
         return '';
     }
 }
@@ -191,7 +218,7 @@ export class ReAssign extends Statement {
         }
         const expressionValue = this.expression.eval()
         if (variable.type == "int") {
-            CodeBuffer.emit(variable.name + " = " + expressionValue + "\n")
+            CodeBuffer.emit(`mov [${variable.name}], ${expressionValue}\n`)
         }
         return '';
     }
@@ -331,7 +358,7 @@ export class Print extends Statement {
             }
             switch (variable.type) {
                 case "string": {
-                    CodeBuffer.emit("cinvoke printf, formatstr, " + variable.name + "\n")
+                    CodeBuffer.emit(`cinvoke printf, formatstr, ${variable.name}\n`)
                     break;
                 }
                 case "float": {
@@ -339,7 +366,7 @@ export class Print extends Statement {
                     break;
                 }
                 default: {
-                    CodeBuffer.emit("cinvoke printf, formatint, " + variable.name + "\n")
+                    CodeBuffer.emit(`cinvoke printf, formatint, [${variable.name}]\n`)
                     break;
                 }
             }

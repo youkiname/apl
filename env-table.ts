@@ -5,10 +5,35 @@ export class Env {
     public variables: any
     public children: Env[]
 
+    public tempVariables = []
+    public freeTempVariables = []
+    private lastTempId = 0
+
     constructor (parent: Env = null) {
         this.parent = parent
         this.variables = {}
         this.children = []
+    }
+
+    public getTemp(): string {
+        if (this.freeTempVariables.length) {
+            return this.freeTempVariables.pop()
+        }
+        return this.makeTemp()
+    }
+    public freeTemp(name: string) {
+        if (!this.tempVariables.includes(name)) {
+            throw Error("Unknown temp variable " + name)
+        }
+        this.freeTempVariables.push(name)
+    }
+
+    private makeTemp(): string {
+        this.lastTempId += 1
+        let name = "t" + this.lastTempId
+        CodeBuffer.emitData(name + " dd ?\n")
+        this.tempVariables.push(name)
+        return name
     }
 
     public add(variable: any) {
@@ -23,7 +48,7 @@ export class Env {
                 break;
             }
             default: {
-                // CodeBuffer.emit("cinvoke printf, formatint, " + variable.name + "\n")
+                CodeBuffer.emitData(variable.name + " dd " + variable.value + "\n")
                 break;
             }
         }

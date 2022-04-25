@@ -3,8 +3,9 @@ import { Grammar } from "./syntax-grammar";
 import { Generator } from "./code-generator";
 
 const code = `
-int a = 10
-float b = 12.5
+int a = 3+10*2
+int b = a+3
+print(a)
 print(b)
 `
 
