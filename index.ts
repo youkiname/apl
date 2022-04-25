@@ -4,10 +4,8 @@ import { Generator } from "./code-generator";
 
 const code = `
 int a = 10
-fun say_hello(name) {
-    string msg = 'hello '
-    print(msg)
-}
+float b = 12.5
+print(b)
 `
 
 const lexer = new Lexer(code)

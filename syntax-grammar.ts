@@ -162,6 +162,9 @@ export class Assign extends Statement {
     }
 
     public eval() {
+        if (env.getDirectly(this.variable.name)) {
+            throw new Error(`Variable '${this.variable.name}' already defined`);
+        }
         const expressionValue = this.expression.eval()
         env.add({ type: this.variable.type, name: this.variable.name, value: expressionValue })
         if (this.variable.type == "int") {
@@ -295,9 +298,10 @@ export class Function extends Statement {
     }
 
     public eval() {
-        CodeBuffer.emit(this.name + ":\n")
+        CodeBuffer.emit("macro " + this.name + " " + this.params.join(',') + "\n")
+        CodeBuffer.emit("{\n")
         this.block.eval()
-        CodeBuffer.emit("end " + this.name + "\n")
+        CodeBuffer.emit("}\n")
         return ""
     }
 }
@@ -325,10 +329,19 @@ export class Print extends Statement {
             if (!variable) {
                 throw new Error(`Undefined variable '${variableName}'`);
             }
-            if (variable.type == "string") {
-                CodeBuffer.emit("cinvoke printf, formatstr, " + variable.name + "\n")
-            } else {
-                CodeBuffer.emit("cinvoke printf, formatint, " + variable.name + "\n")
+            switch (variable.type) {
+                case "string": {
+                    CodeBuffer.emit("cinvoke printf, formatstr, " + variable.name + "\n")
+                    break;
+                }
+                case "float": {
+                    CodeBuffer.emit(`cinvoke printf, formatfloat, dword [${variable.name}], dword [${variable.name}+4]\n`)
+                    break;
+                }
+                default: {
+                    CodeBuffer.emit("cinvoke printf, formatint, " + variable.name + "\n")
+                    break;
+                }
             }
         }
         return '';
@@ -372,6 +385,7 @@ const RULES = [
 
     new Rule(["STRING"], args => new VariableType('string')),
     new Rule(["INT"], args => new VariableType('int')),
+    new Rule(["FLOAT"], args => new VariableType('float')),
     new Rule(["VariableType", "VARIABLE"], args => new VariableInit(args[0] as VariableType, args[1] as Token)),
 
 
@@ -383,6 +397,7 @@ const RULES = [
 
     new Rule(["(", "Expression", ")"], args => new Factor([args[1]], true)),
     new Rule(["NUMBER"], args => new Factor(args)),
+    new Rule(["FLOAT_NUMBER"], args => new Factor(args)),
     new Rule(["VARIABLE"], args => new Factor(args)),
     new Rule(["STRING_CONST"], args => new Factor(args)),
 

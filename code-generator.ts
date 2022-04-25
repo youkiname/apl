@@ -36,6 +36,7 @@ invoke ExitProcess
 
 section '.data' data readable writeable
 formatint db "%i", 13, 10, 0
+formatfloat db "%f", 13, 10, 0
 formatstr db "%s", 13, 10, 0
 `
 

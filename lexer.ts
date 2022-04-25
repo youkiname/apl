@@ -16,6 +16,7 @@ export class TokenType {
 export const tokenTypesList = {
     "NEWLINE": new TokenType("NEWLINE", "\\n"),
     "SPACE": new TokenType("SPACE", "\\s", true),
+    "FLOAT_NUMBER": new TokenType("FLOAT_NUMBER", "[+-]?([0-9]*[.])?[0-9]+"),
     "NUMBER": new TokenType("NUMBER", "\\d+"),
     "COMMA": new TokenType("COMMA", ","),
     "DOT": new TokenType("DOT", "\\."),
@@ -29,6 +30,7 @@ export const tokenTypesList = {
     "NOT_EQUAL": new TokenType("NOT_EQUAL", "!="),
     "STRING": new TokenType("STRING", "string"),
     "INT": new TokenType("INT", "int"),
+    "FLOAT": new TokenType("FLOAT", "float"),
     "ASSIGN": new TokenType("ASSIGN", "="),
     "PLUS": new TokenType("PLUS", "\\+"),
     "MINUS": new TokenType("MINUS", "-"),

@@ -5,17 +5,17 @@ include 'win32a.inc'
 
 section '.code' executable readable writeable
 BeginCode:
-a = 10
-say_hello:
-cinvoke printf, formatstr, msg
-end say_hello
+mov [a], 13
+cinvoke printf, formatint, [a]
 
 invoke ExitProcess
 
 section '.data' data readable writeable
 formatint db "%i", 13, 10, 0
+formatfloat db "%f", 13, 10, 0
 formatstr db "%s", 13, 10, 0
-msg db 'hello ', 0
+b dq 12.5
+a dd 10
 
 section '.idata' import data readable writable
 library kernel,'KERNEL32.DLL', msvcrt,'msvcrt.dll'

@@ -13,8 +13,19 @@ export class Env {
 
     public add(variable: any) {
         this.variables[variable.name] = variable
-        if (variable.type == "string") {
-            CodeBuffer.emitData(variable.name + " db " + variable.value + ", 0\n")
+        switch (variable.type) {
+            case "string": {
+                CodeBuffer.emitData(variable.name + " db " + variable.value + ", 0\n")
+                break;
+            }
+            case "float": {
+                CodeBuffer.emitData(variable.name + " dq " + variable.value + "\n")
+                break;
+            }
+            default: {
+                // CodeBuffer.emit("cinvoke printf, formatint, " + variable.name + "\n")
+                break;
+            }
         }
     }
 
@@ -30,6 +41,10 @@ export class Env {
             env = env.parent
         }
         return null
+    }
+
+    public getDirectly(variableName: string) {
+        return this.variables[variableName]
     }
 
     public addChild(env: Env) {
