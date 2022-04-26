@@ -5,9 +5,8 @@ export class Env {
     public variables: any
     public children: Env[]
 
-    public tempVariables = []
-    public freeTempVariables = []
-    private lastTempId = 0
+    private freeRegisters = ['edx', 'ebx', 'ecx']
+    private lastTempStringId = 0
 
     constructor (parent: Env = null) {
         this.parent = parent
@@ -15,25 +14,19 @@ export class Env {
         this.children = []
     }
 
-    public getTemp(): string {
-        if (this.freeTempVariables.length) {
-            return this.freeTempVariables.pop()
-        }
-        return this.makeTemp()
-    }
-    public freeTemp(name: string) {
-        if (!this.tempVariables.includes(name)) {
-            throw Error("Unknown temp variable " + name)
-        }
-        this.freeTempVariables.push(name)
+    public getFreeRegister(): string {
+        return this.freeRegisters.pop()
     }
 
-    private makeTemp(): string {
-        this.lastTempId += 1
-        let name = "t" + this.lastTempId
-        CodeBuffer.emitData(name + " dd ?\n")
-        this.tempVariables.push(name)
-        return name
+    public freeRegister(name: string) {
+        this.freeRegisters.push(name)
+    }
+
+    public saveTempString(value: string) {
+        this.lastTempStringId += 1
+        let tempName = `ts__${this.lastTempStringId}`
+        CodeBuffer.emitData(`${tempName} dd '${value}, 0'`)
+        return tempName;
     }
 
     public add(variable: any) {

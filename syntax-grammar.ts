@@ -14,6 +14,8 @@ let env = new Env()
 
 export class Statement {
     public args: Array<Statement | Token>
+    public isConstant = false
+
     constructor (args: Array<Statement | Token> = []) {
         this.args = args
     }
@@ -50,23 +52,25 @@ export class VariableInit extends Statement {
 }
 
 export class Factor extends Statement {
-    private brackets = false
 
-    constructor (args: Array<Statement | Token> = [], brackets = false) {
+    constructor (args: Array<Statement | Token> = []) {
         super(args)
-        this.brackets = brackets
     }
 
     public eval() {
-        let tempVariable = env.getTemp()
-        let factor = this.args[0].eval()
-        if (this.isNumeric(factor)) {
-            CodeBuffer.emit(`mov [${tempVariable}], ${factor}\n`)
-        } else {
-            CodeBuffer.emit(`mov eax, [${factor}]\n`)
-            CodeBuffer.emit(`mov [${tempVariable}], eax\n`)
+        if (this.args[0] instanceof Expression) {
+            return this.args[0].eval()
         }
-        return tempVariable
+
+        const register = env.getFreeRegister()
+        const factor = this.args[0].eval()
+
+        if (this.isNumeric(factor)) {
+            CodeBuffer.emit(`mov ${register}, ${factor}\n`)
+        } else {
+            CodeBuffer.emit(`mov ${register}, [${factor}]\n`)
+        }
+        return register
     }
 
     private isNumeric(s: string): boolean {
@@ -95,12 +99,17 @@ export class Term extends Statement {
         const rightName = this.right.eval()
 
         CodeBuffer.emit("; ---MULTIPLY---\n")
-        CodeBuffer.emit(`mov eax, [${leftName}]\n`)
-        CodeBuffer.emit(`imul eax, [${rightName}]\n`)
-        CodeBuffer.emit(`mov [${leftName}], eax\n`)
-        env.freeTemp(rightName)
-
-        return leftName
+        if (this.sign == "*") {
+            CodeBuffer.emit(`imul ${leftName}, ${rightName}\n`)
+            env.freeRegister(rightName)
+            return leftName
+        } else {
+            CodeBuffer.emit(`mov eax, ${leftName}\n`)
+            CodeBuffer.emit(`idiv ${rightName}\n`)
+            env.freeRegister(leftName)
+            env.freeRegister(rightName)
+            return 'eax'
+        }
     }
 }
 
@@ -123,13 +132,19 @@ export class Add extends Statement {
 
         const leftName = this.left.eval()
         const rightName = this.right.eval()
+
         CodeBuffer.emit("; ---ADD---\n")
-        CodeBuffer.emit(`mov eax, [${leftName}]\n`)
-        CodeBuffer.emit(`add eax, [${rightName}]\n`)
-        CodeBuffer.emit(`mov [${leftName}], eax\n`)
-        env.freeTemp(rightName)
+        CodeBuffer.emit(`${this.getCommand()} ${leftName}, ${rightName}\n`)
+        env.freeRegister(rightName)
 
         return leftName
+    }
+
+    private getCommand(): string {
+        if (this.sign == "-") {
+            return "sub"
+        }
+        return "add"
     }
 }
 
@@ -146,8 +161,28 @@ export class Relation extends Statement {
     }
 
     public eval() {
-        CodeBuffer.emit(this.left.eval() + this.sign + this.right.eval())
+
+        const leftRegister = this.left.eval()
+        const rightRegister = this.right.eval()
+
+        CodeBuffer.emit(`cmp ${leftRegister}, ${rightRegister}\n`)
+        CodeBuffer.emit(`${this.getJumpCommand()} endlp\n`)
+
+        env.freeRegister(leftRegister)
+        env.freeRegister(rightRegister)
         return ''
+    }
+
+    private getJumpCommand() {
+        const commands = {
+            '>': 'jle',
+            '>=': 'jl',
+            '<': 'jge',
+            '<=': 'jg',
+            '==': 'jne',
+            '!=': 'je',
+        }
+        return commands[this.sign]
     }
 }
 
@@ -189,13 +224,12 @@ export class Assign extends Statement {
         if (env.getDirectly(this.variable.name)) {
             throw new Error(`Variable '${this.variable.name}' already defined`);
         }
-        const expressionResultName = this.expression.eval()
+        const resultRegister = this.expression.eval()
         env.add({ type: this.variable.type, name: this.variable.name, value: "?" })
 
         CodeBuffer.emit("; ---ASSIGN---\n")
-        CodeBuffer.emit(`mov eax, [${expressionResultName}]\n`)
-        CodeBuffer.emit(`mov [${this.variable.name}], eax\n`)
-        env.freeTemp(expressionResultName);
+        CodeBuffer.emit(`mov [${this.variable.name}], ${resultRegister}\n`)
+        env.freeRegister(resultRegister);
 
         return '';
     }
@@ -216,10 +250,10 @@ export class ReAssign extends Statement {
         if (!variable) {
             throw new Error(`Undefined variable '${this.variableName}'`);
         }
-        const expressionValue = this.expression.eval()
-        if (variable.type == "int") {
-            CodeBuffer.emit(`mov [${variable.name}], ${expressionValue}\n`)
-        }
+        const resultRegister = this.expression.eval()
+        CodeBuffer.emit("; ---REASSIGN---\n")
+        CodeBuffer.emit(`mov [${variable.name}], ${resultRegister}\n`)
+        env.freeRegister(resultRegister)
         return '';
     }
 }
@@ -302,11 +336,11 @@ export class While extends Statement {
     }
 
     public eval() {
-        CodeBuffer.emit("while ")
+        CodeBuffer.emit("lp:\n")
         this.expression.eval()
-        CodeBuffer.emit("\n")
         this.block.eval()
-        CodeBuffer.emit("end while\n")
+        CodeBuffer.emit("jmp lp\n")
+        CodeBuffer.emit("endlp:\n")
         return ""
     }
 }
@@ -357,20 +391,31 @@ export class Print extends Statement {
                 throw new Error(`Undefined variable '${variableName}'`);
             }
             switch (variable.type) {
-                case "string": {
-                    CodeBuffer.emit(`cinvoke printf, formatstr, ${variable.name}\n`)
-                    break;
-                }
                 case "float": {
                     CodeBuffer.emit(`cinvoke printf, formatfloat, dword [${variable.name}], dword [${variable.name}+4]\n`)
                     break;
                 }
-                default: {
+                default: { // int
                     CodeBuffer.emit(`cinvoke printf, formatint, [${variable.name}]\n`)
                     break;
                 }
             }
         }
+        return '';
+    }
+}
+
+export class PrintString extends Statement {
+    private stringConstant: string
+
+    constructor (stringConstant: Token) {
+        super()
+        this.stringConstant = stringConstant.value
+    }
+
+    public eval() {
+        let tempName = env.saveTempString(this.stringConstant)
+        CodeBuffer.emit(`cinvoke printf, formatstr, [${tempName}]`)
         return '';
     }
 }
@@ -421,23 +466,27 @@ const RULES = [
     new Rule(["PreAssign", "Expression", "NEWLINE"], args => new Assign(args[0] as PreAssign, args[1] as Expression)),
     new Rule(["PreReAssign", "Expression", "NEWLINE"], args => new ReAssign(args[0] as PreReAssign, args[1] as Expression)),
     new Rule(["PRINT", "(", "FUN_PARAMS", "NEWLINE"], args => new Print(args[2] as Token)),
+    new Rule(["PRINT", "(", "STRING_CONST", "FUN_PARAMS", "NEWLINE"], args => new PrintString(args[2] as Token)),
 
-    new Rule(["(", "Expression", ")"], args => new Factor([args[1]], true)),
+    new Rule(["(", "Expression", ")"], args => new Factor([args[1]])),
     new Rule(["NUMBER"], args => new Factor(args)),
     new Rule(["FLOAT_NUMBER"], args => new Factor(args)),
     new Rule(["VARIABLE"], args => new Factor(args)),
-    new Rule(["STRING_CONST"], args => new Factor(args)),
 
-    new Rule(["Expression", "STAR", "Expression"], args => new Term(args[0] as Expression, "*", args[2] as Statement)),
-    new Rule(["Expression", "SLASH", "Expression"], args => new Term(args[0] as Expression, "/", args[2] as Statement)),
+    new Rule(["Expression", "STAR", "Factor"], args => new Term(args[0] as Expression, "*", args[2] as Statement)),
+    new Rule(["Expression", "SLASH", "Factor"], args => new Term(args[0] as Expression, "/", args[2] as Statement)),
     new Rule(["Factor"], args => new Term(args[0] as Statement, null, null)),
 
-    new Rule(["Expression", "PLUS", "Add"], args => new Add(args[0] as Expression, "+", args[2] as Statement)),
-    new Rule(["Expression", "MINUS", "Add"], args => new Add(args[0] as Expression, "-", args[2] as Statement)),
+    new Rule(["Expression", "PLUS", "Expression"], args => new Add(args[0] as Expression, "+", args[2] as Statement)),
+    new Rule(["Expression", "MINUS", "Expression"], args => new Add(args[0] as Expression, "-", args[2] as Statement)),
     new Rule(["Term"], args => new Add(args[0] as Term, null, null)),
 
     new Rule(["Expression", "LT", "Expression"], args => new Relation(args[0] as Expression, "<", args[2] as Expression)),
     new Rule(["Expression", "GT", "Expression"], args => new Relation(args[0] as Expression, ">", args[2] as Expression)),
+    new Rule(["Expression", "GTE", "Expression"], args => new Relation(args[0] as Expression, ">=", args[2] as Expression)),
+    new Rule(["Expression", "LTE", "Expression"], args => new Relation(args[0] as Expression, "<=", args[2] as Expression)),
+    new Rule(["Expression", "EQUAL", "Expression"], args => new Relation(args[0] as Expression, "==", args[2] as Expression)),
+    new Rule(["Expression", "NOT_EQUAL", "Expression"], args => new Relation(args[0] as Expression, "!=", args[2] as Expression)),
 
     new Rule(["Relation"], args => new Expression(args)),
     new Rule(["Add"], args => new Expression(args)),
@@ -448,6 +497,7 @@ const RULES = [
     new Rule(["While"], args => new Statement(args)),
     new Rule(["If"], args => new Statement(args)),
     new Rule(["Print"], args => new Statement(args)),
+    new Rule(["PrintString"], args => new Statement(args)),
     new Rule(["Statement", "Statement"], args => new Statement(args)),
     new Rule(["NEWLINE"], args => new Statement(args)),
 ]

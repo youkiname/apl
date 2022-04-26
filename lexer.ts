@@ -45,7 +45,7 @@ export const tokenTypesList = {
     "PRINT": new TokenType("PRINT", "print"),
     "FUN": new TokenType("FUN", "fun"),
     "FUN_NAME": new TokenType("FUN_NAME", "[a-z_]+\\("),
-    "FUN_PARAMS": new TokenType("FUN_PARAMS", "([a-z_]+|(,| ))*\\)"),
+    "FUN_PARAMS": new TokenType("FUN_PARAMS", "([a-z_]+[1-9]*|(,| ))+\\)"),
     "OPEN_EXPR": new TokenType("(", "\\("),
     "CLOSE_EXPR": new TokenType(")", "\\)"),
     "OPEN_BLOCK": new TokenType("{", "{"),
@@ -60,6 +60,7 @@ export const tokenTypesList = {
 export class Token {
     readonly type: TokenType
     readonly value: string
+    readonly isConstant = true
 
     constructor (type: TokenType, value: string) {
         this.type = type
