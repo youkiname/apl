@@ -8,33 +8,25 @@ BeginCode:
 mov ecx, 3
 ; ---ASSIGN---
 mov [a], ecx
-; --- IF ---
+; ---WHILE---
 lb1:
 mov ecx, [a]
-mov ebx, 5
+mov ebx, 10
 cmp ecx, ebx
 mov eax, 0
 lahf
-and ah, 65
+and ah, 1
 mov ebx, eax
 cmp ebx, 0
 je endlb1
-; --- IFELSE ---
-lb2:
-mov ebx, [a]
-mov ecx, 5
-cmp ebx, ecx
-mov eax, 0
-lahf
-and ah, 1
-mov ecx, eax
-cmp ecx, 0
-je elselb2
-cinvoke printf, formatstr, ts__1
-jmp endlb2
-elselb2:
-cinvoke printf, formatstr, ts__2
-endlb2:
+cinvoke printf, formatint, [a]
+mov ecx, [a]
+mov edx, 1
+; ---ADD---
+add ecx, edx
+; ---REASSIGN---
+mov [a], ecx
+jmp lb1
 endlb1:
 
 invoke ExitProcess
@@ -44,8 +36,6 @@ formatint db "%i", 13, 10, 0
 formatfloat db "%f", 13, 10, 0
 formatstr db "%s", 13, 10, 0
 a dd ?
-ts__1 db 'a < 5', 0
-ts__2 db 'a == 5', 0
 
 section '.idata' import data readable writable
 library kernel,'KERNEL32.DLL', msvcrt,'msvcrt.dll'
