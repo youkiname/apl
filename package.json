@@ -4,7 +4,8 @@
   "description": "Handmade Programming Language",
   "main": "index.js",
   "scripts": {
-    "start": "npx tsc index.ts && node index.js && fasm main.asm && main.exe"
+    "start": "npx tsc index.ts && node index.js && fasm main.asm && main.exe",
+    "fasm": "fasm main.asm && main.exe"
   },
   "repository": {
     "type": "git",

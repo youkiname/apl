@@ -148,7 +148,7 @@ export class Add extends Statement {
     }
 }
 
-export class Relation extends Statement {
+export class Comparing extends Statement {
     private left: Expression
     private sign: string
     private right: Expression
@@ -161,28 +161,54 @@ export class Relation extends Statement {
     }
 
     public eval() {
-
         const leftRegister = this.left.eval()
         const rightRegister = this.right.eval()
-
         CodeBuffer.emit(`cmp ${leftRegister}, ${rightRegister}\n`)
-        CodeBuffer.emit(`${this.getJumpCommand()} endlp\n`)
-
         env.freeRegister(leftRegister)
         env.freeRegister(rightRegister)
-        return ''
-    }
-
-    private getJumpCommand() {
-        const commands = {
-            '>': 'jle',
-            '>=': 'jl',
-            '<': 'jge',
-            '<=': 'jg',
-            '==': 'jne',
-            '!=': 'je',
+        const resultRegister = env.getFreeRegister()
+        CodeBuffer.emit(`mov eax, 0\n`)
+        CodeBuffer.emit(`lahf\n`)
+        switch (this.sign) {
+            case "==": {
+                CodeBuffer.emit(`and ah, 64\n`)
+                break;
+            }
+            case "<": {
+                CodeBuffer.emit(`and ah, 1\n`)
+                break;
+            }
+            case ">": {
+                CodeBuffer.emit(`and ah, 65\n`)
+                CodeBuffer.emit(`cmp eax, 0\n`)
+                const tempLabel = env.newLabel()
+                CodeBuffer.emit(`jne ${tempLabel}\n`)
+                CodeBuffer.emit(`mov eax, 1\n`)
+                CodeBuffer.emit(`jmp end${tempLabel}\n`)
+                CodeBuffer.emit(`${tempLabel}:\n`)
+                CodeBuffer.emit(`mov eax, 0\n`)
+                CodeBuffer.emit(`end${tempLabel}:\n`)
+                break;
+            }
+            case "<=": {
+                CodeBuffer.emit(`and ah, 65\n`)
+                break;
+            }
+            case ">=": {
+                CodeBuffer.emit(`and ah, 1\n`)
+                CodeBuffer.emit(`cmp eax, 0\n`)
+                const tempLabel = env.newLabel()
+                CodeBuffer.emit(`jne ${tempLabel}\n`)
+                CodeBuffer.emit(`mov eax, 1\n`)
+                CodeBuffer.emit(`jmp end${tempLabel}\n`)
+                CodeBuffer.emit(`${tempLabel}:\n`)
+                CodeBuffer.emit(`mov eax, 0\n`)
+                CodeBuffer.emit(`end${tempLabel}:\n`)
+                break;
+            }
         }
-        return commands[this.sign]
+        CodeBuffer.emit(`mov ${resultRegister}, eax\n`)
+        return resultRegister
     }
 }
 
@@ -282,8 +308,8 @@ export class Block extends Statement {
 }
 
 export class If extends Statement {
-    private expression: Expression
-    private block: Block
+    readonly expression: Expression
+    readonly block: Block
 
     constructor (expression: Expression, block: Block) {
         super()
@@ -292,12 +318,26 @@ export class If extends Statement {
     }
 
     public eval() {
-        CodeBuffer.emit("if ")
-        this.expression.eval()
-        CodeBuffer.emit("\n")
+        const label = env.newLabel()
+        CodeBuffer.emit(`; --- IF ---\n`)
+        CodeBuffer.emit(`${label}:\n`)
+        const comparingRegister = this.expression.eval()
+        CodeBuffer.emit(`cmp ${comparingRegister}, 0\n`)
+        env.freeRegister(comparingRegister)
+
+        CodeBuffer.emit(`je end${label}\n`)
         this.block.eval()
-        CodeBuffer.emit("end if\n")
+        CodeBuffer.emit(`end${label}:\n`)
         return ""
+    }
+}
+
+export class PreIfElse extends Statement {
+    readonly ifStatement: If
+
+    constructor (ifStatement: If) {
+        super()
+        this.ifStatement = ifStatement
     }
 }
 
@@ -306,21 +346,27 @@ export class IfElse extends Statement {
     private block: Block
     private elseBlock: Block
 
-    constructor (expression: Expression, block: Block, elseBlock: Block) {
+    constructor (preIfElse: PreIfElse, elseBlock: Block) {
         super()
-        this.expression = expression
-        this.block = block
+        this.expression = preIfElse.ifStatement.expression
+        this.block = preIfElse.ifStatement.block
         this.elseBlock = elseBlock
     }
 
     public eval() {
-        CodeBuffer.emit("if ")
-        this.expression.eval()
-        CodeBuffer.emit("\n")
+        const label = env.newLabel()
+        CodeBuffer.emit(`; --- IFELSE ---\n`)
+        CodeBuffer.emit(`${label}:\n`)
+        const comparingRegister = this.expression.eval()
+        CodeBuffer.emit(`cmp ${comparingRegister}, 0\n`)
+        env.freeRegister(comparingRegister)
+
+        CodeBuffer.emit(`je else${label}\n`)
         this.block.eval()
-        CodeBuffer.emit("else\n")
+        CodeBuffer.emit(`jmp end${label}\n`)
+        CodeBuffer.emit(`else${label}:\n`)
         this.elseBlock.eval()
-        CodeBuffer.emit("end if\n")
+        CodeBuffer.emit(`end${label}:\n`)
         return ""
     }
 }
@@ -336,11 +382,13 @@ export class While extends Statement {
     }
 
     public eval() {
-        CodeBuffer.emit("lp:\n")
+        const label = env.newLabel()
+        CodeBuffer.emit("; ---WHILE---\n")
+        CodeBuffer.emit(`${label}:\n`)
         this.expression.eval()
         this.block.eval()
-        CodeBuffer.emit("jmp lp\n")
-        CodeBuffer.emit("endlp:\n")
+        CodeBuffer.emit(`jmp ${label}\n`)
+        CodeBuffer.emit(`end${label}:\n`)
         return ""
     }
 }
@@ -415,7 +463,7 @@ export class PrintString extends Statement {
 
     public eval() {
         let tempName = env.saveTempString(this.stringConstant)
-        CodeBuffer.emit(`cinvoke printf, formatstr, [${tempName}]`)
+        CodeBuffer.emit(`cinvoke printf, formatstr, ${tempName}\n`)
         return '';
     }
 }
@@ -452,6 +500,8 @@ const RULES = [
 
     new Rule(["WHILE", "Expression", "Block"], args => new While(args[1] as Expression, args[2] as Block)),
     new Rule(["IF", "Expression", "Block"], args => new If(args[1] as Expression, args[2] as Block)),
+    new Rule(["If", "ELSE"], args => new PreIfElse(args[0] as If)),
+    new Rule(["PreIfElse", "Block"], args => new IfElse(args[0] as PreIfElse, args[1] as Block)),
 
     new Rule(["{", "Statement", "}"], args => new Block(args[1] as Statement)),
 
@@ -466,7 +516,7 @@ const RULES = [
     new Rule(["PreAssign", "Expression", "NEWLINE"], args => new Assign(args[0] as PreAssign, args[1] as Expression)),
     new Rule(["PreReAssign", "Expression", "NEWLINE"], args => new ReAssign(args[0] as PreReAssign, args[1] as Expression)),
     new Rule(["PRINT", "(", "FUN_PARAMS", "NEWLINE"], args => new Print(args[2] as Token)),
-    new Rule(["PRINT", "(", "STRING_CONST", "FUN_PARAMS", "NEWLINE"], args => new PrintString(args[2] as Token)),
+    new Rule(["PRINT", "(", "STRING_CONST", ")", "NEWLINE"], args => new PrintString(args[2] as Token)),
 
     new Rule(["(", "Expression", ")"], args => new Factor([args[1]])),
     new Rule(["NUMBER"], args => new Factor(args)),
@@ -481,20 +531,21 @@ const RULES = [
     new Rule(["Expression", "MINUS", "Expression"], args => new Add(args[0] as Expression, "-", args[2] as Statement)),
     new Rule(["Term"], args => new Add(args[0] as Term, null, null)),
 
-    new Rule(["Expression", "LT", "Expression"], args => new Relation(args[0] as Expression, "<", args[2] as Expression)),
-    new Rule(["Expression", "GT", "Expression"], args => new Relation(args[0] as Expression, ">", args[2] as Expression)),
-    new Rule(["Expression", "GTE", "Expression"], args => new Relation(args[0] as Expression, ">=", args[2] as Expression)),
-    new Rule(["Expression", "LTE", "Expression"], args => new Relation(args[0] as Expression, "<=", args[2] as Expression)),
-    new Rule(["Expression", "EQUAL", "Expression"], args => new Relation(args[0] as Expression, "==", args[2] as Expression)),
-    new Rule(["Expression", "NOT_EQUAL", "Expression"], args => new Relation(args[0] as Expression, "!=", args[2] as Expression)),
+    new Rule(["Expression", "LT", "Expression"], args => new Comparing(args[0] as Expression, "<", args[2] as Expression)),
+    new Rule(["Expression", "GT", "Expression"], args => new Comparing(args[0] as Expression, ">", args[2] as Expression)),
+    new Rule(["Expression", "GTE", "Expression"], args => new Comparing(args[0] as Expression, ">=", args[2] as Expression)),
+    new Rule(["Expression", "LTE", "Expression"], args => new Comparing(args[0] as Expression, "<=", args[2] as Expression)),
+    new Rule(["Expression", "EQUAL", "Expression"], args => new Comparing(args[0] as Expression, "==", args[2] as Expression)),
+    new Rule(["Expression", "NOT_EQUAL", "Expression"], args => new Comparing(args[0] as Expression, "!=", args[2] as Expression)),
 
-    new Rule(["Relation"], args => new Expression(args)),
+    new Rule(["Comparing"], args => new Expression(args)),
     new Rule(["Add"], args => new Expression(args)),
 
     new Rule(["Function"], args => new Statement(args)),
     new Rule(["Assign"], args => new Statement(args)),
     new Rule(["ReAssign"], args => new Statement(args)),
     new Rule(["While"], args => new Statement(args)),
+    new Rule(["IfElse"], args => new Statement(args)),
     new Rule(["If"], args => new Statement(args)),
     new Rule(["Print"], args => new Statement(args)),
     new Rule(["PrintString"], args => new Statement(args)),

@@ -8,10 +8,24 @@ export class Env {
     private freeRegisters = ['edx', 'ebx', 'ecx']
     private lastTempStringId = 0
 
+    private lastLabelId = 0
+    private label: string
+
+
     constructor (parent: Env = null) {
         this.parent = parent
         this.variables = {}
         this.children = []
+    }
+
+    public newLabel(): string {
+        this.lastLabelId += 1
+        this.label = "lb" + this.lastLabelId
+        return this.label
+    }
+
+    public getLabel(): string {
+        return this.label
     }
 
     public getFreeRegister(): string {
@@ -25,7 +39,7 @@ export class Env {
     public saveTempString(value: string) {
         this.lastTempStringId += 1
         let tempName = `ts__${this.lastTempStringId}`
-        CodeBuffer.emitData(`${tempName} dd '${value}, 0'`)
+        CodeBuffer.emitData(`${tempName} db ${value}, 0\n`)
         return tempName;
     }
 
@@ -37,7 +51,7 @@ export class Env {
                 break;
             }
             case "float": {
-                CodeBuffer.emitData(variable.name + " dq " + variable.value + "\n")
+                CodeBuffer.emitData(variable.name + " dd " + variable.value + "\n")
                 break;
             }
             default: {

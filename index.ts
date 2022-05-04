@@ -3,10 +3,13 @@ import { Grammar } from "./syntax-grammar";
 import { Generator } from "./code-generator";
 
 const code = `
-int a = 9
-while (a!=10) {
-    a = a + 1
-    print(a)
+int a = 3
+if (a <= 5) {
+    if (a < 5) {
+        print('a < 5')
+    } else {
+        print('a == 5')
+    }
 }
 `
 
