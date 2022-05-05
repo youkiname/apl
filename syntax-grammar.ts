@@ -163,6 +163,7 @@ export class Comparing extends Statement {
     public eval() {
         const leftRegister = this.left.eval()
         const rightRegister = this.right.eval()
+        CodeBuffer.emit(`;--- COMPARING ${this.sign} ---\n`)
         CodeBuffer.emit(`cmp ${leftRegister}, ${rightRegister}\n`)
         env.freeRegister(leftRegister)
         env.freeRegister(rightRegister)
@@ -382,7 +383,7 @@ export class While extends Statement {
     }
 
     public eval() {
-        const label = env.newLabel()
+        const label = env.newLabel('whilelb')
         CodeBuffer.emit("; ---WHILE---\n")
         CodeBuffer.emit(`${label}:\n`)
         const comparingRegister = this.expression.eval()
@@ -394,6 +395,25 @@ export class While extends Statement {
         return ""
     }
 }
+
+export class Break extends Statement {
+    public eval() {
+        const label = env.getLabel('whilelb')
+        CodeBuffer.emit(`;--- BREAK ---\n`)
+        CodeBuffer.emit(`jmp end${label}\n`)
+        return ''
+    }
+}
+
+export class Continue extends Statement {
+    public eval() {
+        const label = env.getLabel('whilelb')
+        CodeBuffer.emit(`;--- Continue ---\n`)
+        CodeBuffer.emit(`jmp ${label}\n`)
+        return ''
+    }
+}
+
 
 export class Function extends Statement {
     private name: string
@@ -542,6 +562,11 @@ const RULES = [
 
     new Rule(["Comparing"], args => new Expression(args)),
     new Rule(["Add"], args => new Expression(args)),
+
+    new Rule(["BREAK"], args => new Break()),
+    new Rule(["CONTINUE"], args => new Continue()),
+    new Rule(["Break"], args => new Statement(args)),
+    new Rule(["Continue"], args => new Statement(args)),
 
     new Rule(["Function"], args => new Statement(args)),
     new Rule(["Assign"], args => new Statement(args)),

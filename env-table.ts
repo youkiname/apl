@@ -9,7 +9,7 @@ export class Env {
     private lastTempStringId = 0
 
     private lastLabelId = 0
-    private label: string
+    private labels: { [key: string]: string } = {}
 
 
     constructor (parent: Env = null) {
@@ -18,14 +18,14 @@ export class Env {
         this.children = []
     }
 
-    public newLabel(): string {
+    public newLabel(type = 'lb'): string {
         this.lastLabelId += 1
-        this.label = "lb" + this.lastLabelId
-        return this.label
+        this.labels[type] = type + this.lastLabelId
+        return this.labels[type]
     }
 
-    public getLabel(): string {
-        return this.label
+    public getLabel(type = 'lb'): string {
+        return this.labels[type]
     }
 
     public getFreeRegister(): string {

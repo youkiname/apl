@@ -3,11 +3,11 @@ import { Grammar } from "./syntax-grammar";
 import { Generator } from "./code-generator";
 
 const code = `
-int a = 3
-while (a < 10) {
-    print(a)
-    a = a + 1
+int a = 1
+while (0) {
+    break
 }
+
 `
 
 const lexer = new Lexer(code)
