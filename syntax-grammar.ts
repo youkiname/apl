@@ -68,7 +68,8 @@ export class Factor extends Statement {
         if (this.isNumeric(factor)) {
             CodeBuffer.emit(`mov ${register}, ${factor}\n`)
         } else {
-            CodeBuffer.emit(`mov ${register}, [${factor}]\n`)
+            const varName = env.get(factor).name
+            CodeBuffer.emit(`mov ${register}, [${varName}]\n`)
         }
         return register
     }
@@ -252,7 +253,8 @@ export class Assign extends Statement {
             throw new Error(`Variable '${this.variable.name}' already defined`);
         }
         const resultRegister = this.expression.eval()
-        env.add({ type: this.variable.type, name: this.variable.name, value: "?" })
+        const newName = env.add({ type: this.variable.type, name: this.variable.name, value: "?" })
+        this.variable.name = newName
 
         CodeBuffer.emit("; ---ASSIGN---\n")
         CodeBuffer.emit(`mov [${this.variable.name}], ${resultRegister}\n`)
@@ -420,29 +422,50 @@ export class Function extends Statement {
     private params: string[]
     private block: Block
 
-    constructor (funName: Token, params: Token, block: Block) {
+    constructor (funName: Token, block: Block, params: Token = null) {
         super()
-        this.name = funName.value.slice(0, -1)
-        //  remove spaces, remove end bracket ')' and split params to array
-        this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
+        this.name = funName.value.split(' ')[1].slice(0, -1)
+        if (params) {
+            //  remove spaces, remove end bracket ')' and split params to array
+            this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
+        } else {
+            this.params = []
+        }
         this.block = block
     }
 
     public eval() {
+        const nestedEnv = new Env(this.name, env)
+        env.addChild(nestedEnv);
+        env = nestedEnv
+
         CodeBuffer.emit("macro " + this.name + " " + this.params.join(',') + "\n")
         CodeBuffer.emit("{\n")
         this.block.eval()
         CodeBuffer.emit("}\n")
+
+        env = env.parent
         return ""
     }
 }
 
 export class CallFunction extends Statement {
     private name: string
+    private params: string[]
 
-    constructor (funName: Token) {
+    constructor (funName: Token, params: Token = null) {
         super()
-        this.name = funName.value
+        this.name = funName.value.slice(0, -1)
+        if (params) {
+            //  remove spaces, remove end bracket ')' and split params to array
+            this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
+        } else {
+            this.params = []
+        }
+    }
+    public eval() {
+        CodeBuffer.emit(this.name + " " + this.params.join(',') + "\n")
+        return ""
     }
 }
 
@@ -517,8 +540,11 @@ export class Rule {
 }
 
 const RULES = [
-    new Rule(["FUN", "FUN_NAME", "FUN_PARAMS", "Block"], args => new Function(args[1] as Token, args[2] as Token, args[3] as Block)),
+    new Rule(["FUN_INIT", "FUN_PARAMS", "Block"], args => new Function(args[0] as Token, args[2] as Block, args[1] as Token)),
+    new Rule(["FUN_INIT", ")", "Block"], args => new Function(args[0] as Token, args[2] as Block)),
 
+    new Rule(["FUN_NAME", "FUN_PARAMS", ")"], args => new CallFunction(args[0] as Token, args[1] as Token)),
+    new Rule(["FUN_NAME", ")"], args => new CallFunction(args[0] as Token)),
 
     new Rule(["WHILE", "Expression", "Block"], args => new While(args[1] as Expression, args[2] as Block)),
     new Rule(["IF", "Expression", "Block"], args => new If(args[1] as Expression, args[2] as Block)),
@@ -531,7 +557,6 @@ const RULES = [
     new Rule(["INT"], args => new VariableType('int')),
     new Rule(["FLOAT"], args => new VariableType('float')),
     new Rule(["VariableType", "VARIABLE"], args => new VariableInit(args[0] as VariableType, args[1] as Token)),
-
 
     new Rule(["VariableInit", "ASSIGN"], args => new PreAssign(args[0] as VariableInit)),
     new Rule(["VARIABLE", "ASSIGN"], args => new PreReAssign(args[0].eval())),
@@ -569,6 +594,7 @@ const RULES = [
     new Rule(["Continue"], args => new Statement(args)),
 
     new Rule(["Function"], args => new Statement(args)),
+    new Rule(["CallFunction"], args => new Statement(args)),
     new Rule(["Assign"], args => new Statement(args)),
     new Rule(["ReAssign"], args => new Statement(args)),
     new Rule(["While"], args => new Statement(args)),

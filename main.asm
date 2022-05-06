@@ -8,15 +8,26 @@ BeginCode:
 mov ecx, 1
 ; ---ASSIGN---
 mov [a], ecx
-; ---WHILE---
-whilelb1:
-mov ecx, 0
-cmp ecx, 0
-je endwhilelb1
-;--- BREAK ---
-jmp endwhilelb1
-jmp whilelb1
-endwhilelb1:
+macro say_hello 
+{
+mov ecx, 5
+; ---ASSIGN---
+mov [say_hello__a], ecx
+mov ecx, [say_hello__a]
+mov ebx, 1
+; ---ADD---
+add ecx, ebx
+; ---REASSIGN---
+mov [say_hello__a], ecx
+cinvoke printf, formatint, [say_hello__a]
+}
+macro fuck 
+{
+cinvoke printf, formatstr, fuck__ts__1
+}
+say_hello 
+cinvoke printf, formatint, [a]
+fuck 
 
 invoke ExitProcess
 
@@ -25,6 +36,8 @@ formatint db "%i", 13, 10, 0
 formatfloat db "%f", 13, 10, 0
 formatstr db "%s", 13, 10, 0
 a dd ?
+say_hello__a dd ?
+fuck__ts__1 db 'fuck', 0
 
 section '.idata' import data readable writable
 library kernel,'KERNEL32.DLL', msvcrt,'msvcrt.dll'

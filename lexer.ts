@@ -43,7 +43,7 @@ export const tokenTypesList = {
     "IF": new TokenType("IF", "if"),
     "ELSE": new TokenType("ELSE", "else"),
     "PRINT": new TokenType("PRINT", "print"),
-    "FUN": new TokenType("FUN", "fun"),
+    "FUN_INIT": new TokenType("FUN_INIT", "fun [a-z_]+\\("),
     "FUN_NAME": new TokenType("FUN_NAME", "[a-z_]+\\("),
     "FUN_PARAMS": new TokenType("FUN_PARAMS", "([a-z_]+[1-9]*|(,| ))+\\)"),
     "OPEN_EXPR": new TokenType("(", "\\("),

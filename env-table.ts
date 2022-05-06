@@ -1,7 +1,8 @@
 import { CodeBuffer } from "./code-generator"
 
 export class Env {
-    public parent: Env
+    public name: string
+    public parent: Env | null
     public variables: any
     public children: Env[]
 
@@ -12,7 +13,8 @@ export class Env {
     private labels: { [key: string]: string } = {}
 
 
-    constructor (parent: Env = null) {
+    constructor (name: string = '', parent: Env = null) {
+        this.name = name
         this.parent = parent
         this.variables = {}
         this.children = []
@@ -20,7 +22,7 @@ export class Env {
 
     public newLabel(type = 'lb'): string {
         this.lastLabelId += 1
-        this.labels[type] = type + this.lastLabelId
+        this.labels[type] = this.getNamePrefix() + type + this.lastLabelId
         return this.labels[type]
     }
 
@@ -38,12 +40,13 @@ export class Env {
 
     public saveTempString(value: string) {
         this.lastTempStringId += 1
-        let tempName = `ts__${this.lastTempStringId}`
+        let tempName = this.getNamePrefix() + `ts__${this.lastTempStringId}`
         CodeBuffer.emitData(`${tempName} db ${value}, 0\n`)
         return tempName;
     }
 
-    public add(variable: any) {
+    public add(variable: any): string {
+        variable.name = this.getNamePrefix() + variable.name
         this.variables[variable.name] = variable
         switch (variable.type) {
             case "string": {
@@ -59,27 +62,38 @@ export class Env {
                 break;
             }
         }
+        return variable.name
     }
 
     public get(name: string) {
+        name = this.getNamePrefix() + name
+
         if (name in this.variables) {
             return this.variables[name]
         }
-        let env = this.parent
-        while (env !== null) {
-            if (name in env.variables) {
-                return env.variables[name]
-            }
-            env = env.parent
-        }
+        // let env = this.parent
+        // while (env !== null) {
+        //     if (name in env.variables) {
+        //         return env.variables[name]
+        //     }
+        //     env = env.parent
+        // }
         return null
     }
 
     public getDirectly(variableName: string) {
+        variableName = this.getNamePrefix() + variableName
         return this.variables[variableName]
     }
 
     public addChild(env: Env) {
         this.children.push(env)
+    }
+
+    public getNamePrefix() {
+        if (!this.parent) {
+            return '';
+        }
+        return this.parent.getNamePrefix() + this.name + "__";
     }
 }
