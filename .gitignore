@@ -1,3 +1,7 @@
+*.exe
+*.asm
+*.apl
+
 # Logs
 logs
 *.log

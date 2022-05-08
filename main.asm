@@ -5,29 +5,25 @@ include 'win32a.inc'
 
 section '.code' executable readable writeable
 BeginCode:
+macro say_hello
+{
+pop ecx
+mov [say_hello__a], ecx
+pop ecx
+mov [say_hello__b], ecx
+cinvoke printf, formatint, [say_hello__a]
+cinvoke printf, formatstr, say_hello__ts__1
+cinvoke printf, formatint, [say_hello__b]
+}
 mov ecx, 1
 ; ---ASSIGN---
 mov [a], ecx
-macro say_hello 
-{
-mov ecx, 5
+mov ecx, 10
 ; ---ASSIGN---
-mov [say_hello__a], ecx
-mov ecx, [say_hello__a]
-mov ebx, 1
-; ---ADD---
-add ecx, ebx
-; ---REASSIGN---
-mov [say_hello__a], ecx
-cinvoke printf, formatint, [say_hello__a]
-}
-macro fuck 
-{
-cinvoke printf, formatstr, fuck__ts__1
-}
-say_hello 
-cinvoke printf, formatint, [a]
-fuck 
+mov [b], ecx
+push [b]
+push [a]
+say_hello
 
 invoke ExitProcess
 
@@ -35,9 +31,11 @@ section '.data' data readable writeable
 formatint db "%i", 13, 10, 0
 formatfloat db "%f", 13, 10, 0
 formatstr db "%s", 13, 10, 0
-a dd ?
 say_hello__a dd ?
-fuck__ts__1 db 'fuck', 0
+say_hello__b dd ?
+say_hello__ts__1 db 'hi', 0
+a dd ?
+b dd ?
 
 section '.idata' import data readable writable
 library kernel,'KERNEL32.DLL', msvcrt,'msvcrt.dll'

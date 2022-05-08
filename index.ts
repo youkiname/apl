@@ -2,15 +2,15 @@ import { Lexer } from "./lexer";
 import { Grammar } from "./syntax-grammar";
 import { Generator } from "./code-generator";
 
-const code = `\
-int a = 1
-fun say_hello() {
-    int a = 5
-    a = a + 1
+const code = `
+fun say_hello(a:int, b:int) {
     print(a)
+    print('hi')
+    print(b)
 }
-say_hello()
-print(a)
+int a = 1
+int b = 10
+say_hello(a, b)
 `
 
 const lexer = new Lexer(code)

@@ -45,7 +45,7 @@ export class Env {
         return tempName;
     }
 
-    public add(variable: any): string {
+    public add(variable: { name: string, type: string, value: string }): string {
         variable.name = this.getNamePrefix() + variable.name
         this.variables[variable.name] = variable
         switch (variable.type) {
@@ -71,13 +71,13 @@ export class Env {
         if (name in this.variables) {
             return this.variables[name]
         }
-        // let env = this.parent
-        // while (env !== null) {
-        //     if (name in env.variables) {
-        //         return env.variables[name]
-        //     }
-        //     env = env.parent
-        // }
+        let env = this.parent
+        while (env !== null) {
+            if (name in env.variables) {
+                return env.variables[name]
+            }
+            env = env.parent
+        }
         return null
     }
 

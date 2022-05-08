@@ -10,6 +10,23 @@ function isArrayEquals(a: string[], b: string[]): boolean {
     return a.map((s, i) => s == b[i]).every(status => status === true)
 }
 
+class FunctionParameter {
+    constructor (
+        readonly name: string,
+        readonly type: string,
+    ) { }
+}
+
+function parseFunctionParams(rawValue: string): FunctionParameter[] {
+    const result = []
+    const rawParams = rawValue.replace(/\s/g, '').slice(0, -1).split(',');
+    for (let rawParam of rawParams) {
+        const nameAndType = rawParam.split(':')
+        result.push(new FunctionParameter(nameAndType[0], nameAndType[1]))
+    }
+    return result
+}
+
 let env = new Env()
 
 export class Statement {
@@ -419,17 +436,14 @@ export class Continue extends Statement {
 
 export class Function extends Statement {
     private name: string
-    private params: string[]
+    private params: FunctionParameter[] = []
     private block: Block
 
     constructor (funName: Token, block: Block, params: Token = null) {
         super()
         this.name = funName.value.split(' ')[1].slice(0, -1)
         if (params) {
-            //  remove spaces, remove end bracket ')' and split params to array
-            this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
-        } else {
-            this.params = []
+            this.params = parseFunctionParams(params.value)
         }
         this.block = block
     }
@@ -439,8 +453,15 @@ export class Function extends Statement {
         env.addChild(nestedEnv);
         env = nestedEnv
 
-        CodeBuffer.emit("macro " + this.name + " " + this.params.join(',') + "\n")
+        CodeBuffer.emit(`macro ${this.name}\n`)
         CodeBuffer.emit("{\n")
+        for (let param of this.params) {
+            let fullParamName = env.add({ type: param.type, name: param.name, value: "?" })
+            const register = env.getFreeRegister()
+            CodeBuffer.emit(`pop ${register}\n`)
+            CodeBuffer.emit(`mov [${fullParamName}], ${register}\n`)
+            env.freeRegister(register)
+        }
         this.block.eval()
         CodeBuffer.emit("}\n")
 
@@ -451,7 +472,7 @@ export class Function extends Statement {
 
 export class CallFunction extends Statement {
     private name: string
-    private params: string[]
+    private params: string[] = []
 
     constructor (funName: Token, params: Token = null) {
         super()
@@ -459,12 +480,18 @@ export class CallFunction extends Statement {
         if (params) {
             //  remove spaces, remove end bracket ')' and split params to array
             this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
-        } else {
-            this.params = []
         }
     }
+
     public eval() {
-        CodeBuffer.emit(this.name + " " + this.params.join(',') + "\n")
+        for (let paramName of this.params.reverse()) {
+            let variable = env.get(paramName)
+            if (!variable) {
+                throw new Error(`Undefined variable '${paramName}'`);
+            }
+            CodeBuffer.emit(`push [${variable.name}]\n`)
+        }
+        CodeBuffer.emit(this.name + "\n")
         return ""
     }
 }
@@ -540,10 +567,10 @@ export class Rule {
 }
 
 const RULES = [
-    new Rule(["FUN_INIT", "FUN_PARAMS", "Block"], args => new Function(args[0] as Token, args[2] as Block, args[1] as Token)),
+    new Rule(["FUN_INIT", "INIT_FUN_PARAMS", "Block"], args => new Function(args[0] as Token, args[2] as Block, args[1] as Token)),
     new Rule(["FUN_INIT", ")", "Block"], args => new Function(args[0] as Token, args[2] as Block)),
 
-    new Rule(["FUN_NAME", "FUN_PARAMS", ")"], args => new CallFunction(args[0] as Token, args[1] as Token)),
+    new Rule(["FUN_NAME", "FUN_ARGS"], args => new CallFunction(args[0] as Token, args[1] as Token)),
     new Rule(["FUN_NAME", ")"], args => new CallFunction(args[0] as Token)),
 
     new Rule(["WHILE", "Expression", "Block"], args => new While(args[1] as Expression, args[2] as Block)),
@@ -562,7 +589,7 @@ const RULES = [
     new Rule(["VARIABLE", "ASSIGN"], args => new PreReAssign(args[0].eval())),
     new Rule(["PreAssign", "Expression", "NEWLINE"], args => new Assign(args[0] as PreAssign, args[1] as Expression)),
     new Rule(["PreReAssign", "Expression", "NEWLINE"], args => new ReAssign(args[0] as PreReAssign, args[1] as Expression)),
-    new Rule(["PRINT", "(", "FUN_PARAMS", "NEWLINE"], args => new Print(args[2] as Token)),
+    new Rule(["PRINT", "(", "FUN_ARGS", "NEWLINE"], args => new Print(args[2] as Token)),
     new Rule(["PRINT", "(", "STRING_CONST", ")", "NEWLINE"], args => new PrintString(args[2] as Token)),
 
     new Rule(["(", "Expression", ")"], args => new Factor([args[1]])),
