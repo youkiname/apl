@@ -45,7 +45,7 @@ export const tokenTypesList = {
     "PRINT": new TokenType("PRINT", "print"),
     "FUN_INIT": new TokenType("FUN_INIT", "fun [a-z_]+\\("),
     "FUN_NAME": new TokenType("FUN_NAME", "[a-z_]+\\("),
-    "INIT_FUN_PARAMS": new TokenType("INIT_FUN_PARAMS", "([a-z_]+[1-9]*:[a-z]+|(,| ))+\\)"),
+    "INIT_FUN_PARAMS": new TokenType("INIT_FUN_PARAMS", "([a-z_]+[1-9]*\\s*:\\s*[a-z]+|(,| ))+\\)"),
     "FUN_ARGS": new TokenType("FUN_ARGS", "([a-z_]+[1-9]*|(,| ))+\\)"),
     "OPEN_EXPR": new TokenType("(", "\\("),
     "CLOSE_EXPR": new TokenType(")", "\\)"),
@@ -76,7 +76,7 @@ export class Token {
         return this.value;
     }
 
-    public validateStringValue(tokenValue: string): string {
+    private validateStringValue(tokenValue: string): string {
         if (tokenValue.length == 2) {
             return tokenValue
         }

@@ -1,16 +1,19 @@
-import { Lexer } from "./lexer";
-import { Grammar } from "./syntax-grammar";
+import { Lexer } from "./lexer/lexer";
+import { Grammar } from "./syntax/grammar";
 import { Generator } from "./code-generator";
 
 const code = `
-fun say_hello(a:int, b:int) {
-    print(a)
-    print('hi')
-    print(b)
+fun say_hello(a: int) {
+    while (a > 0) {
+        a = a - 1
+        print(a)
+    }
 }
-int a = 1
-int b = 10
-say_hello(a, b)
+int a = 10
+say_hello(a)
+say_hello(a)
+say_hello(a)
+print(a)
 `
 
 const lexer = new Lexer(code)

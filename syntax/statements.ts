@@ -1,21 +1,7 @@
-import { CodeBuffer } from "./code-generator"
-import { Token } from "./lexer"
-import { Env } from "./env-table"
-
-
-function isArrayEquals(a: string[], b: string[]): boolean {
-    if (a.length != b.length) {
-        return false
-    }
-    return a.map((s, i) => s == b[i]).every(status => status === true)
-}
-
-class FunctionParameter {
-    constructor (
-        readonly name: string,
-        readonly type: string,
-    ) { }
-}
+import { CodeBuffer } from "../code-generator"
+import { Env } from "../env";
+import { Token } from "../lexer/lexer"
+import { Evalable, FunctionParameter } from "./models";
 
 function parseFunctionParams(rawValue: string): FunctionParameter[] {
     const result = []
@@ -30,10 +16,10 @@ function parseFunctionParams(rawValue: string): FunctionParameter[] {
 let env = new Env()
 
 export class Statement {
-    public args: Array<Statement | Token>
+    public args: Array<Evalable>
     public isConstant = false
 
-    constructor (args: Array<Statement | Token> = []) {
+    constructor (args: Array<Evalable> = []) {
         this.args = args
     }
 
@@ -70,7 +56,7 @@ export class VariableInit extends Statement {
 
 export class Factor extends Statement {
 
-    constructor (args: Array<Statement | Token> = []) {
+    constructor (args: Array<Evalable> = []) {
         super(args)
     }
 
@@ -85,7 +71,7 @@ export class Factor extends Statement {
         if (this.isNumeric(factor)) {
             CodeBuffer.emit(`mov ${register}, ${factor}\n`)
         } else {
-            const varName = env.get(factor).name
+            const varName = env.getVariable(factor).name
             CodeBuffer.emit(`mov ${register}, [${varName}]\n`)
         }
         return register
@@ -270,7 +256,7 @@ export class Assign extends Statement {
             throw new Error(`Variable '${this.variable.name}' already defined`);
         }
         const resultRegister = this.expression.eval()
-        const newName = env.add({ type: this.variable.type, name: this.variable.name, value: "?" })
+        const newName = env.addVariable({ type: this.variable.type, name: this.variable.name, value: "?" })
         this.variable.name = newName
 
         CodeBuffer.emit("; ---ASSIGN---\n")
@@ -292,7 +278,7 @@ export class ReAssign extends Statement {
     }
 
     public eval() {
-        let variable = env.get(this.variableName)
+        let variable = env.getVariable(this.variableName)
         if (!variable) {
             throw new Error(`Undefined variable '${this.variableName}'`);
         }
@@ -407,6 +393,7 @@ export class While extends Statement {
         CodeBuffer.emit(`${label}:\n`)
         const comparingRegister = this.expression.eval()
         CodeBuffer.emit(`cmp ${comparingRegister}, 0\n`)
+        env.freeRegister(comparingRegister)
         CodeBuffer.emit(`je end${label}\n`)
         this.block.eval()
         CodeBuffer.emit(`jmp ${label}\n`)
@@ -449,21 +436,20 @@ export class Function extends Statement {
     }
 
     public eval() {
-        const nestedEnv = new Env(this.name, env)
-        env.addChild(nestedEnv);
-        env = nestedEnv
+        if (!env.getFunction(this.name)) {
+            env.addFunction(this)
+            return ""
+        }
+        env = env.getOrCreate(this.name);
 
-        CodeBuffer.emit(`macro ${this.name}\n`)
-        CodeBuffer.emit("{\n")
         for (let param of this.params) {
-            let fullParamName = env.add({ type: param.type, name: param.name, value: "?" })
+            let fullParamName = env.addVariable({ type: param.type, name: param.name, value: "?" })
             const register = env.getFreeRegister()
             CodeBuffer.emit(`pop ${register}\n`)
             CodeBuffer.emit(`mov [${fullParamName}], ${register}\n`)
             env.freeRegister(register)
         }
         this.block.eval()
-        CodeBuffer.emit("}\n")
 
         env = env.parent
         return ""
@@ -484,15 +470,20 @@ export class CallFunction extends Statement {
     }
 
     public eval() {
+        CodeBuffer.emit(`; --- CAll FUNCTION ${this.name} ---\n`)
         for (let paramName of this.params.reverse()) {
-            let variable = env.get(paramName)
+            let variable = env.getVariable(paramName)
             if (!variable) {
                 throw new Error(`Undefined variable '${paramName}'`);
             }
             CodeBuffer.emit(`push [${variable.name}]\n`)
         }
-        CodeBuffer.emit(this.name + "\n")
-        return ""
+        const f = env.getFunction(this.name)
+        if (!f) {
+            throw new Error(`Call undefined function '${this.name}'`);
+        }
+        const returnRegister: string = f.eval()
+        return returnRegister
     }
 }
 
@@ -506,7 +497,7 @@ export class Print extends Statement {
 
     public eval() {
         for (let variableName of this.params) {
-            let variable = env.get(variableName);
+            let variable = env.getVariable(variableName);
             if (!variable) {
                 throw new Error(`Undefined variable '${variableName}'`);
             }
@@ -534,164 +525,8 @@ export class PrintString extends Statement {
     }
 
     public eval() {
-        let tempName = env.saveTempString(this.stringConstant)
+        let tempName = env.saveString(this.stringConstant)
         CodeBuffer.emit(`cinvoke printf, formatstr, ${tempName}\n`)
         return '';
     }
 }
-
-
-type StatementConstructor = (args: Array<Statement | Token>) => Statement;
-
-
-export class Rule {
-    private production: string[]
-    private resultConstructor: StatementConstructor
-
-    constructor (production: string[], resultConstructor: StatementConstructor) {
-        this.production = production
-        this.resultConstructor = resultConstructor
-    }
-
-    public getStatement(args: Array<Statement | Token>): Statement {
-        return this.resultConstructor(args)
-    }
-
-    public has(statements: string[]): boolean {
-        return isArrayEquals(statements, this.production)
-    }
-
-    public length(): number {
-        return this.production.length
-    }
-}
-
-const RULES = [
-    new Rule(["FUN_INIT", "INIT_FUN_PARAMS", "Block"], args => new Function(args[0] as Token, args[2] as Block, args[1] as Token)),
-    new Rule(["FUN_INIT", ")", "Block"], args => new Function(args[0] as Token, args[2] as Block)),
-
-    new Rule(["FUN_NAME", "FUN_ARGS"], args => new CallFunction(args[0] as Token, args[1] as Token)),
-    new Rule(["FUN_NAME", ")"], args => new CallFunction(args[0] as Token)),
-
-    new Rule(["WHILE", "Expression", "Block"], args => new While(args[1] as Expression, args[2] as Block)),
-    new Rule(["IF", "Expression", "Block"], args => new If(args[1] as Expression, args[2] as Block)),
-    new Rule(["If", "ELSE"], args => new PreIfElse(args[0] as If)),
-    new Rule(["PreIfElse", "Block"], args => new IfElse(args[0] as PreIfElse, args[1] as Block)),
-
-    new Rule(["{", "Statement", "}"], args => new Block(args[1] as Statement)),
-
-    new Rule(["STRING"], args => new VariableType('string')),
-    new Rule(["INT"], args => new VariableType('int')),
-    new Rule(["FLOAT"], args => new VariableType('float')),
-    new Rule(["VariableType", "VARIABLE"], args => new VariableInit(args[0] as VariableType, args[1] as Token)),
-
-    new Rule(["VariableInit", "ASSIGN"], args => new PreAssign(args[0] as VariableInit)),
-    new Rule(["VARIABLE", "ASSIGN"], args => new PreReAssign(args[0].eval())),
-    new Rule(["PreAssign", "Expression", "NEWLINE"], args => new Assign(args[0] as PreAssign, args[1] as Expression)),
-    new Rule(["PreReAssign", "Expression", "NEWLINE"], args => new ReAssign(args[0] as PreReAssign, args[1] as Expression)),
-    new Rule(["PRINT", "(", "FUN_ARGS", "NEWLINE"], args => new Print(args[2] as Token)),
-    new Rule(["PRINT", "(", "STRING_CONST", ")", "NEWLINE"], args => new PrintString(args[2] as Token)),
-
-    new Rule(["(", "Expression", ")"], args => new Factor([args[1]])),
-    new Rule(["NUMBER"], args => new Factor(args)),
-    new Rule(["FLOAT_NUMBER"], args => new Factor(args)),
-    new Rule(["VARIABLE"], args => new Factor(args)),
-
-    new Rule(["Expression", "STAR", "Factor"], args => new Term(args[0] as Expression, "*", args[2] as Statement)),
-    new Rule(["Expression", "SLASH", "Factor"], args => new Term(args[0] as Expression, "/", args[2] as Statement)),
-    new Rule(["Factor"], args => new Term(args[0] as Statement, null, null)),
-
-    new Rule(["Expression", "PLUS", "Expression"], args => new Add(args[0] as Expression, "+", args[2] as Statement)),
-    new Rule(["Expression", "MINUS", "Expression"], args => new Add(args[0] as Expression, "-", args[2] as Statement)),
-    new Rule(["Term"], args => new Add(args[0] as Term, null, null)),
-
-    new Rule(["Expression", "LT", "Expression"], args => new Comparing(args[0] as Expression, "<", args[2] as Expression)),
-    new Rule(["Expression", "GT", "Expression"], args => new Comparing(args[0] as Expression, ">", args[2] as Expression)),
-    new Rule(["Expression", "GTE", "Expression"], args => new Comparing(args[0] as Expression, ">=", args[2] as Expression)),
-    new Rule(["Expression", "LTE", "Expression"], args => new Comparing(args[0] as Expression, "<=", args[2] as Expression)),
-    new Rule(["Expression", "EQUAL", "Expression"], args => new Comparing(args[0] as Expression, "==", args[2] as Expression)),
-    new Rule(["Expression", "NOT_EQUAL", "Expression"], args => new Comparing(args[0] as Expression, "!=", args[2] as Expression)),
-
-    new Rule(["Comparing"], args => new Expression(args)),
-    new Rule(["Add"], args => new Expression(args)),
-
-    new Rule(["BREAK"], args => new Break()),
-    new Rule(["CONTINUE"], args => new Continue()),
-    new Rule(["Break"], args => new Statement(args)),
-    new Rule(["Continue"], args => new Statement(args)),
-
-    new Rule(["Function"], args => new Statement(args)),
-    new Rule(["CallFunction"], args => new Statement(args)),
-    new Rule(["Assign"], args => new Statement(args)),
-    new Rule(["ReAssign"], args => new Statement(args)),
-    new Rule(["While"], args => new Statement(args)),
-    new Rule(["IfElse"], args => new Statement(args)),
-    new Rule(["If"], args => new Statement(args)),
-    new Rule(["Print"], args => new Statement(args)),
-    new Rule(["PrintString"], args => new Statement(args)),
-    new Rule(["Statement", "Statement"], args => new Statement(args)),
-    new Rule(["NEWLINE"], args => new Statement(args)),
-]
-
-
-
-export class Grammar {
-    private statements: Array<Statement | Token>
-
-    private startIndex: number
-
-    constructor (tokens: Token[]) {
-        this.statements = tokens
-        this.startIndex = 0
-    }
-
-    public getAST(): Statement {
-        while (true) {
-            if (this.nextStep()) {
-                this.startIndex = 0
-                continue
-            }
-
-            this.startIndex += 1
-            if (this.startIndex == this.statements.length) {
-                break
-            }
-        }
-
-        if (this.statements.length == 1) {
-            return this.statements[0] as Statement
-        }
-        console.log(this.statements.map(s => s.toString()));
-        throw new Error("Syntax error. Can't build AST.");
-    }
-
-    private nextStep(): boolean {
-        for (let rule of RULES) {
-            const endIndex = this.startIndex + rule.length()
-            const stringStatements = this.getStringStatements(this.startIndex, endIndex)
-            if (rule.has(stringStatements)) {
-                const newItem = rule.getStatement(this.statements.slice(this.startIndex, endIndex))
-                // console.log(this.statements.map(s => s.toString()));
-                this.joinElements(
-                    this.startIndex,
-                    endIndex,
-                    newItem
-                )
-                // console.log("------------");
-
-                return true
-            }
-        }
-        return false
-    }
-
-    private joinElements(start: number, end: number, newElement: Statement) {
-        this.statements.splice(start, end - start, newElement)
-    }
-
-    private getStringStatements(start: number, end: number): string[] {
-        const stringStatements: string[] = this.statements.map(s => s.toString())
-        return stringStatements.slice(start, end)
-    }
-}
-
