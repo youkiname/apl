@@ -3,16 +3,8 @@ import { Grammar } from "./syntax/grammar";
 import { Generator } from "./code-generator";
 
 const code = `
-fun say_hello(a: int) {
-    while (a > 0) {
-        a = a - 1
-        print(a)
-    }
-}
-int a = 10
-say_hello(a)
-say_hello(a)
-say_hello(a)
+int b = 2
+int a = 2+ 2 * b
 print(a)
 `
 

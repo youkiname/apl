@@ -290,15 +290,6 @@ export class ReAssign extends Statement {
     }
 }
 
-export class Return extends Statement {
-    private expression: Expression
-
-    constructor (expression: Expression) {
-        super()
-        this.expression = expression
-    }
-}
-
 export class Block extends Statement {
     private statement: Statement
 
@@ -420,6 +411,23 @@ export class Continue extends Statement {
     }
 }
 
+export class Return extends Statement {
+    private expression: Expression
+
+    constructor (expression: Expression) {
+        super()
+        this.expression = expression
+    }
+
+    public eval() {
+        const label = env.getLabel('fun')
+        const resultRegister = this.expression.eval()
+        CodeBuffer.emit(`mov eax, ${resultRegister}\n`)
+        env.freeRegister(resultRegister)
+        CodeBuffer.emit(`jmp end${label}\n`)
+        return ''
+    }
+}
 
 export class Function extends Statement {
     private name: string
@@ -449,8 +457,11 @@ export class Function extends Statement {
             CodeBuffer.emit(`mov [${fullParamName}], ${register}\n`)
             env.freeRegister(register)
         }
+        const label = env.newLabel('fun')
+        CodeBuffer.emit(`${label}:\n`)
         this.block.eval()
-
+        CodeBuffer.emit(`mov eax, 0\n`)
+        CodeBuffer.emit(`end${label}:\n`)
         env = env.parent
         return ""
     }
@@ -482,8 +493,8 @@ export class CallFunction extends Statement {
         if (!f) {
             throw new Error(`Call undefined function '${this.name}'`);
         }
-        const returnRegister: string = f.eval()
-        return returnRegister
+        f.eval()
+        return "eax"
     }
 }
 

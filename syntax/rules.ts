@@ -64,8 +64,13 @@ export const RULES = [
     new Rule(["FLOAT_NUMBER"], args => new s.Factor(args)),
     new Rule(["VARIABLE"], args => new s.Factor(args)),
 
-    new Rule(["Expression", "STAR", "Factor"], args => new s.Term(args[0] as s.Expression, "*", args[2] as s.Statement)),
-    new Rule(["Expression", "SLASH", "Factor"], args => new s.Term(args[0] as s.Expression, "/", args[2] as s.Statement)),
+    new Rule(["CallFunction"], args => new s.Term(args[0] as s.Expression, null, null)),
+    new Rule(["Term", "STAR", "FLOAT_NUMBER"], args => new s.Term(args[0] as s.Expression, "*", args[2] as s.Statement)),
+    new Rule(["Term", "SLASH", "FLOAT_NUMBER"], args => new s.Term(args[0] as s.Expression, "/", args[2] as s.Statement)),
+    new Rule(["Term", "STAR", "VARIABLE"], args => new s.Term(args[0] as s.Expression, "*", new s.Factor([args[2]]))),
+    new Rule(["Term", "SLASH", "VARIABLE"], args => new s.Term(args[0] as s.Expression, "/", new s.Factor([args[2]]))),
+    new Rule(["Term", "STAR", "Factor"], args => new s.Term(args[0] as s.Expression, "*", args[2] as s.Statement)),
+    new Rule(["Term", "SLASH", "Factor"], args => new s.Term(args[0] as s.Expression, "/", args[2] as s.Statement)),
     new Rule(["Factor"], args => new s.Term(args[0] as s.Statement, null, null)),
 
     new Rule(["Expression", "PLUS", "Expression"], args => new s.Add(args[0] as s.Expression, "+", args[2] as s.Statement)),
@@ -87,8 +92,10 @@ export const RULES = [
     new Rule(["Break"], args => new s.Statement(args)),
     new Rule(["Continue"], args => new s.Statement(args)),
 
+    new Rule(["RETURN", "Expression"], args => new s.Return(args[1] as s.Expression)),
     new Rule(["Function"], args => new s.Statement(args)),
-    new Rule(["CallFunction"], args => new s.Statement(args)),
+    // new Rule(["CallFunction"], args => new s.Statement(args)),
+    new Rule(["Return"], args => new s.Statement(args)),
     new Rule(["Assign"], args => new s.Statement(args)),
     new Rule(["ReAssign"], args => new s.Statement(args)),
     new Rule(["While"], args => new s.Statement(args)),
