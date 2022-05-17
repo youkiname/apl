@@ -3,8 +3,12 @@ import { Grammar } from "./syntax/grammar";
 import { Generator } from "./code-generator";
 
 const code = `
-int b = 2
-int a = 2+ 2 * b
+fun say_hi(a:int) {
+    a = 2
+    return a
+}
+int a = 5
+int b = say_hi(a)
 print(a)
 `
 

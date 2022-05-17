@@ -1,7 +1,9 @@
 import { CodeBuffer } from "../code-generator"
 import { Env } from "../env";
 import { Token } from "../lexer/lexer"
-import { Evalable, FunctionParameter } from "./models";
+import { Evalable, FunctionParameter, Variable } from "./models";
+import { MemoryBuffer, Register, EAX, EBX, ECX, EDX, ZERO } from "./models"
+
 
 function parseFunctionParams(rawValue: string): FunctionParameter[] {
     const result = []
@@ -17,7 +19,6 @@ let env = new Env()
 
 export class Statement {
     public args: Array<Evalable>
-    public isConstant = false
 
     constructor (args: Array<Evalable> = []) {
         this.args = args
@@ -27,11 +28,11 @@ export class Statement {
         return this.constructor['name']
     }
 
-    public eval() {
+    public eval(): MemoryBuffer {
         for (let arg of this.args) {
             arg.eval();
         }
-        return ''
+        return null
     }
 }
 
@@ -52,6 +53,10 @@ export class VariableInit extends Statement {
         this.type = type.name
         this.name = name.value
     }
+
+    public convert(): Variable {
+        return new Variable(this.name, this.type, '?')
+    }
 }
 
 export class Factor extends Statement {
@@ -68,11 +73,11 @@ export class Factor extends Statement {
         const register = env.getFreeRegister()
         const factor = this.args[0].eval()
 
-        if (this.isNumeric(factor)) {
-            CodeBuffer.emit(`mov ${register}, ${factor}\n`)
+        if (this.isNumeric(factor.name)) {
+            CodeBuffer.mov(register, factor)
         } else {
-            const varName = env.getVariable(factor).name
-            CodeBuffer.emit(`mov ${register}, [${varName}]\n`)
+            const variable = env.getVariable(factor.name)
+            CodeBuffer.mov(register, variable)
         }
         return register
     }
@@ -102,17 +107,17 @@ export class Term extends Statement {
         const leftName = this.left.eval()
         const rightName = this.right.eval()
 
-        CodeBuffer.emit("; ---MULTIPLY---\n")
+        CodeBuffer.comment("---MULTIPLY---")
         if (this.sign == "*") {
-            CodeBuffer.emit(`imul ${leftName}, ${rightName}\n`)
+            CodeBuffer.imul(leftName, rightName)
             env.freeRegister(rightName)
             return leftName
         } else {
-            CodeBuffer.emit(`mov eax, ${leftName}\n`)
-            CodeBuffer.emit(`idiv ${rightName}\n`)
+            CodeBuffer.mov(EAX, leftName)
+            CodeBuffer.idiv(rightName)
             env.freeRegister(leftName)
             env.freeRegister(rightName)
-            return 'eax'
+            return EAX
         }
     }
 }
@@ -137,18 +142,15 @@ export class Add extends Statement {
         const leftName = this.left.eval()
         const rightName = this.right.eval()
 
-        CodeBuffer.emit("; ---ADD---\n")
-        CodeBuffer.emit(`${this.getCommand()} ${leftName}, ${rightName}\n`)
+        CodeBuffer.comment("---ADD---")
+        if (this.sign == "-") {
+            CodeBuffer.sub(leftName, rightName)
+        } else {
+            CodeBuffer.add(leftName, rightName)
+        }
         env.freeRegister(rightName)
 
         return leftName
-    }
-
-    private getCommand(): string {
-        if (this.sign == "-") {
-            return "sub"
-        }
-        return "add"
     }
 }
 
@@ -167,12 +169,11 @@ export class Comparing extends Statement {
     public eval() {
         const leftRegister = this.left.eval()
         const rightRegister = this.right.eval()
-        CodeBuffer.emit(`;--- COMPARING ${this.sign} ---\n`)
-        CodeBuffer.emit(`cmp ${leftRegister}, ${rightRegister}\n`)
+        CodeBuffer.comment(`--- COMPARING ${this.sign} ---`)
+        CodeBuffer.cmp(leftRegister, rightRegister)
         env.freeRegister(leftRegister)
         env.freeRegister(rightRegister)
-        const resultRegister = env.getFreeRegister()
-        CodeBuffer.emit(`mov eax, 0\n`)
+        CodeBuffer.mov(EAX, ZERO)
         CodeBuffer.emit(`lahf\n`)
         switch (this.sign) {
             case "==": {
@@ -185,13 +186,13 @@ export class Comparing extends Statement {
             }
             case ">": {
                 CodeBuffer.emit(`and ah, 65\n`)
-                CodeBuffer.emit(`cmp eax, 0\n`)
+                CodeBuffer.cmp(EAX, ZERO)
                 const tempLabel = env.newLabel()
                 CodeBuffer.emit(`jne ${tempLabel}\n`)
-                CodeBuffer.emit(`mov eax, 1\n`)
+                CodeBuffer.mov(EAX, new MemoryBuffer('1', 'int'))
                 CodeBuffer.emit(`jmp end${tempLabel}\n`)
                 CodeBuffer.emit(`${tempLabel}:\n`)
-                CodeBuffer.emit(`mov eax, 0\n`)
+                CodeBuffer.mov(EAX, ZERO)
                 CodeBuffer.emit(`end${tempLabel}:\n`)
                 break;
             }
@@ -201,18 +202,19 @@ export class Comparing extends Statement {
             }
             case ">=": {
                 CodeBuffer.emit(`and ah, 1\n`)
-                CodeBuffer.emit(`cmp eax, 0\n`)
+                CodeBuffer.cmp(EAX, ZERO)
                 const tempLabel = env.newLabel()
                 CodeBuffer.emit(`jne ${tempLabel}\n`)
-                CodeBuffer.emit(`mov eax, 1\n`)
+                CodeBuffer.mov(EAX, new MemoryBuffer('1', 'int'))
                 CodeBuffer.emit(`jmp end${tempLabel}\n`)
                 CodeBuffer.emit(`${tempLabel}:\n`)
-                CodeBuffer.emit(`mov eax, 0\n`)
+                CodeBuffer.mov(EAX, ZERO)
                 CodeBuffer.emit(`end${tempLabel}:\n`)
                 break;
             }
         }
-        CodeBuffer.emit(`mov ${resultRegister}, eax\n`)
+        const resultRegister = env.getFreeRegister()
+        CodeBuffer.mov(resultRegister, EAX)
         return resultRegister
     }
 }
@@ -256,14 +258,13 @@ export class Assign extends Statement {
             throw new Error(`Variable '${this.variable.name}' already defined`);
         }
         const resultRegister = this.expression.eval()
-        const newName = env.addVariable({ type: this.variable.type, name: this.variable.name, value: "?" })
-        this.variable.name = newName
+        const savedVariable = env.addVariable(this.variable.convert())
 
-        CodeBuffer.emit("; ---ASSIGN---\n")
-        CodeBuffer.emit(`mov [${this.variable.name}], ${resultRegister}\n`)
+        CodeBuffer.comment("---ASSIGN---")
+        CodeBuffer.mov(savedVariable, resultRegister)
         env.freeRegister(resultRegister);
 
-        return '';
+        return null;
     }
 }
 
@@ -278,15 +279,15 @@ export class ReAssign extends Statement {
     }
 
     public eval() {
-        let variable = env.getVariable(this.variableName)
+        const variable = env.getVariable(this.variableName)
         if (!variable) {
             throw new Error(`Undefined variable '${this.variableName}'`);
         }
         const resultRegister = this.expression.eval()
-        CodeBuffer.emit("; ---REASSIGN---\n")
-        CodeBuffer.emit(`mov [${variable.name}], ${resultRegister}\n`)
+        CodeBuffer.comment("---REASSIGN---")
+        CodeBuffer.mov(variable, resultRegister)
         env.freeRegister(resultRegister)
-        return '';
+        return null;
     }
 }
 
@@ -300,7 +301,7 @@ export class Block extends Statement {
 
     public eval() {
         this.statement.eval()
-        return '';
+        return null;
     }
 }
 
@@ -316,16 +317,16 @@ export class If extends Statement {
 
     public eval() {
         const label = env.newLabel()
-        CodeBuffer.emit(`; --- IF ---\n`)
+        CodeBuffer.comment(`--- IF ---`)
         CodeBuffer.emit(`${label}:\n`)
         const comparingRegister = this.expression.eval()
-        CodeBuffer.emit(`cmp ${comparingRegister}, 0\n`)
+        CodeBuffer.cmp(comparingRegister, ZERO)
         env.freeRegister(comparingRegister)
 
         CodeBuffer.emit(`je end${label}\n`)
         this.block.eval()
         CodeBuffer.emit(`end${label}:\n`)
-        return ""
+        return null
     }
 }
 
@@ -352,10 +353,10 @@ export class IfElse extends Statement {
 
     public eval() {
         const label = env.newLabel()
-        CodeBuffer.emit(`; --- IFELSE ---\n`)
+        CodeBuffer.comment(`--- IFELSE ---`)
         CodeBuffer.emit(`${label}:\n`)
         const comparingRegister = this.expression.eval()
-        CodeBuffer.emit(`cmp ${comparingRegister}, 0\n`)
+        CodeBuffer.cmp(comparingRegister, ZERO)
         env.freeRegister(comparingRegister)
 
         CodeBuffer.emit(`je else${label}\n`)
@@ -364,7 +365,7 @@ export class IfElse extends Statement {
         CodeBuffer.emit(`else${label}:\n`)
         this.elseBlock.eval()
         CodeBuffer.emit(`end${label}:\n`)
-        return ""
+        return null
     }
 }
 
@@ -380,34 +381,34 @@ export class While extends Statement {
 
     public eval() {
         const label = env.newLabel('whilelb')
-        CodeBuffer.emit("; ---WHILE---\n")
+        CodeBuffer.comment("---WHILE---")
         CodeBuffer.emit(`${label}:\n`)
         const comparingRegister = this.expression.eval()
-        CodeBuffer.emit(`cmp ${comparingRegister}, 0\n`)
+        CodeBuffer.cmp(comparingRegister, ZERO)
         env.freeRegister(comparingRegister)
         CodeBuffer.emit(`je end${label}\n`)
         this.block.eval()
         CodeBuffer.emit(`jmp ${label}\n`)
         CodeBuffer.emit(`end${label}:\n`)
-        return ""
+        return null
     }
 }
 
 export class Break extends Statement {
     public eval() {
         const label = env.getLabel('whilelb')
-        CodeBuffer.emit(`;--- BREAK ---\n`)
+        CodeBuffer.comment(`--- BREAK ---`)
         CodeBuffer.emit(`jmp end${label}\n`)
-        return ''
+        return null
     }
 }
 
 export class Continue extends Statement {
     public eval() {
         const label = env.getLabel('whilelb')
-        CodeBuffer.emit(`;--- Continue ---\n`)
+        CodeBuffer.comment(`--- Continue ---`)
         CodeBuffer.emit(`jmp ${label}\n`)
-        return ''
+        return null
     }
 }
 
@@ -422,10 +423,10 @@ export class Return extends Statement {
     public eval() {
         const label = env.getLabel('fun')
         const resultRegister = this.expression.eval()
-        CodeBuffer.emit(`mov eax, ${resultRegister}\n`)
+        CodeBuffer.mov(EAX, resultRegister)
         env.freeRegister(resultRegister)
         CodeBuffer.emit(`jmp end${label}\n`)
-        return ''
+        return null
     }
 }
 
@@ -446,24 +447,24 @@ export class Function extends Statement {
     public eval() {
         if (!env.getFunction(this.name)) {
             env.addFunction(this)
-            return ""
+            return null
         }
         env = env.getOrCreate(this.name);
 
         for (let param of this.params) {
-            let fullParamName = env.addVariable({ type: param.type, name: param.name, value: "?" })
+            let variable = env.addVariable(param.convert())
             const register = env.getFreeRegister()
-            CodeBuffer.emit(`pop ${register}\n`)
-            CodeBuffer.emit(`mov [${fullParamName}], ${register}\n`)
+            CodeBuffer.pop(register)
+            CodeBuffer.mov(variable, register)
             env.freeRegister(register)
         }
         const label = env.newLabel('fun')
         CodeBuffer.emit(`${label}:\n`)
         this.block.eval()
-        CodeBuffer.emit(`mov eax, 0\n`)
+        CodeBuffer.mov(EAX, ZERO)
         CodeBuffer.emit(`end${label}:\n`)
         env = env.parent
-        return ""
+        return null
     }
 }
 
@@ -481,20 +482,20 @@ export class CallFunction extends Statement {
     }
 
     public eval() {
-        CodeBuffer.emit(`; --- CAll FUNCTION ${this.name} ---\n`)
+        CodeBuffer.comment(`--- CAll FUNCTION ${this.name} ---`)
         for (let paramName of this.params.reverse()) {
             let variable = env.getVariable(paramName)
             if (!variable) {
                 throw new Error(`Undefined variable '${paramName}'`);
             }
-            CodeBuffer.emit(`push [${variable.name}]\n`)
+            CodeBuffer.push(variable)
         }
         const f = env.getFunction(this.name)
         if (!f) {
             throw new Error(`Call undefined function '${this.name}'`);
         }
         f.eval()
-        return "eax"
+        return EAX
     }
 }
 
@@ -523,7 +524,7 @@ export class Print extends Statement {
                 }
             }
         }
-        return '';
+        return null;
     }
 }
 
@@ -538,6 +539,6 @@ export class PrintString extends Statement {
     public eval() {
         let tempName = env.saveString(this.stringConstant)
         CodeBuffer.emit(`cinvoke printf, formatstr, ${tempName}\n`)
-        return '';
+        return null;
     }
 }

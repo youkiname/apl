@@ -39,13 +39,13 @@ export class Grammar {
             const stringStatements = this.getStringStatements(this.startIndex, endIndex)
             if (rule.has(stringStatements)) {
                 const newItem = rule.getStatement(this.statements.slice(this.startIndex, endIndex))
-                console.log(this.statements.map(s => s.toString()));
+                // console.log(this.statements.map(s => s.toString()));
                 this.joinElements(
                     this.startIndex,
                     endIndex,
                     newItem
                 )
-                console.log("------------");
+                // console.log("------------");
 
                 return true
             }

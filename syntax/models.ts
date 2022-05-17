@@ -1,5 +1,5 @@
 export type Evalable = {
-    eval(): string
+    eval(): MemoryBuffer
 };
 
 export class FunctionParameter {
@@ -7,12 +7,45 @@ export class FunctionParameter {
         readonly name: string,
         readonly type: string,
     ) { }
+
+    public convert(): Variable {
+        return new Variable(this.name, this.type, "?")
+    }
 }
 
-export class Variable {
+export class MemoryBuffer {
     constructor (
-        public name: string,
+        readonly name: string,
         readonly type: string,
-        readonly value: string
+        readonly pointable = false,
     ) { }
+
+    public getOperandName(): string {
+        if (this.pointable) {
+            return "[" + this.name + "]"
+        }
+        return this.name
+    }
+}
+
+export class Register extends MemoryBuffer {
+    constructor (name: string) {
+        super(name, 'register')
+    }
+}
+
+export const ZERO = new MemoryBuffer('0', 'int')
+
+export const EAX = new Register('eax')
+export const EDX = new Register('edx')
+export const EBX = new Register('ebx')
+export const ECX = new Register('ecx')
+
+export class Variable extends MemoryBuffer {
+    readonly value: string
+
+    constructor (name: string, type: string, value: string) {
+        super(name, type, true)
+        this.value = value
+    }
 } 

@@ -1,5 +1,6 @@
 import { CodeBuffer } from "./code-generator"
 import { Variable } from "./syntax/models"
+import { MemoryBuffer, Register } from "./syntax/models"
 
 export class Env {
     public name: string
@@ -9,7 +10,11 @@ export class Env {
     public children: { [key: string]: Env }
     private labels: { [key: string]: string }
 
-    private freeRegisters = ['edx', 'ebx', 'ecx']
+    private freeRegisters = [
+        new Register('edx'),
+        new Register('ebx'),
+        new Register('ecx')
+    ]
     private lastLabelId = 0
     private lastTempStringId = 0
 
@@ -32,12 +37,12 @@ export class Env {
         return this.labels[type]
     }
 
-    public getFreeRegister(): string {
+    public getFreeRegister(): Register {
         return this.freeRegisters.pop()
     }
 
-    public freeRegister(name: string) {
-        this.freeRegisters.push(name)
+    public freeRegister(register: Register) {
+        this.freeRegisters.push(register)
     }
 
     public saveString(value: string): string {
@@ -47,32 +52,35 @@ export class Env {
         return tempName;
     }
 
-    public addVariable(variable: Variable): string {
-        variable.name = this.getNamePrefix() + variable.name
-        if (this.variables[variable.name]) {
-            return this.variables[variable.name].name
+    public addVariable(variable: Variable): Variable {
+        const savedVariable = new Variable(
+            this.getNamePrefix() + variable.name,
+            variable.type,
+            variable.value
+        )
+        if (this.variables[savedVariable.name]) {
+            return this.variables[savedVariable.name]
         }
-        this.variables[variable.name] = variable
+        this.variables[savedVariable.name] = savedVariable
         switch (variable.type) {
             case "string": {
-                CodeBuffer.emitData(variable.name + " db " + variable.value + ", 0\n")
+                CodeBuffer.emitData(savedVariable.name + " db " + variable.value + ", 0\n")
                 break;
             }
             case "float": {
-                CodeBuffer.emitData(variable.name + " dd " + variable.value + "\n")
+                CodeBuffer.emitData(savedVariable.name + " dd " + variable.value + "\n")
                 break;
             }
             default: {
-                CodeBuffer.emitData(variable.name + " dd " + variable.value + "\n")
+                CodeBuffer.emitData(savedVariable.name + " dd " + variable.value + "\n")
                 break;
             }
         }
-        return variable.name
+        return savedVariable
     }
 
     public getVariable(name: string): Variable {
         name = this.getNamePrefix() + name
-
         if (name in this.variables) {
             return this.variables[name]
         }

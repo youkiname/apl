@@ -1,3 +1,4 @@
+import { MemoryBuffer } from "../syntax/models"
 
 export class TokenType {
     readonly name: string
@@ -61,7 +62,6 @@ export const tokenTypesList = {
 export class Token {
     readonly type: TokenType
     readonly value: string
-    readonly isConstant = true
 
     constructor (type: TokenType, value: string) {
         this.type = type
@@ -72,8 +72,8 @@ export class Token {
         }
     }
 
-    public eval(): string {
-        return this.value;
+    public eval(): MemoryBuffer {
+        return new MemoryBuffer(this.value, "token");
     }
 
     private validateStringValue(tokenValue: string): string {

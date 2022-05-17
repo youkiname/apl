@@ -1,3 +1,4 @@
+import { join } from "path";
 import { Token } from "../lexer/lexer";
 import { Evalable } from "./models"
 import * as s from './statements';
@@ -53,7 +54,7 @@ export const RULES = [
     new Rule(["VariableType", "VARIABLE"], args => new s.VariableInit(args[0] as s.VariableType, args[1] as Token)),
 
     new Rule(["VariableInit", "ASSIGN"], args => new s.PreAssign(args[0] as s.VariableInit)),
-    new Rule(["VARIABLE", "ASSIGN"], args => new s.PreReAssign(args[0].eval())),
+    new Rule(["VARIABLE", "ASSIGN"], args => new s.PreReAssign(args[0].eval().name)),
     new Rule(["PreAssign", "Expression", "NEWLINE"], args => new s.Assign(args[0] as s.PreAssign, args[1] as s.Expression)),
     new Rule(["PreReAssign", "Expression", "NEWLINE"], args => new s.ReAssign(args[0] as s.PreReAssign, args[1] as s.Expression)),
     new Rule(["PRINT", "(", "FUN_ARGS", "NEWLINE"], args => new s.Print(args[2] as Token)),
@@ -92,7 +93,7 @@ export const RULES = [
     new Rule(["Break"], args => new s.Statement(args)),
     new Rule(["Continue"], args => new s.Statement(args)),
 
-    new Rule(["RETURN", "Expression"], args => new s.Return(args[1] as s.Expression)),
+    new Rule(["RETURN", "Expression", "NEWLINE"], args => new s.Return(args[1] as s.Expression)),
     new Rule(["Function"], args => new s.Statement(args)),
     // new Rule(["CallFunction"], args => new s.Statement(args)),
     new Rule(["Return"], args => new s.Statement(args)),
