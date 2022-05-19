@@ -25,6 +25,18 @@ export class CodeBuffer {
         CodeBuffer.emit(`idiv ${op.getOperandName()}\n`)
     }
 
+    public static div(op: MemoryBuffer) {
+        CodeBuffer.emit(`div ${op.getOperandName()}\n`)
+    }
+
+    public static and(op1: MemoryBuffer, op2: MemoryBuffer) {
+        CodeBuffer.emit(`and ${op1.getOperandName()} ${op2.getOperandName()}\n`)
+    }
+
+    public static or(op1: MemoryBuffer, op2: MemoryBuffer) {
+        CodeBuffer.emit(`or ${op1.getOperandName()} ${op2.getOperandName()}\n`)
+    }
+
     public static push(op: MemoryBuffer) {
         CodeBuffer.emit(`push ${op.getOperandName()}\n`)
     }
@@ -34,7 +46,7 @@ export class CodeBuffer {
     }
 
     public static cmp(op1: MemoryBuffer, op2) {
-        CodeBuffer.emit(`cmo ${op1.getOperandName()}, ${op2.getOperandName()}\n`)
+        CodeBuffer.emit(`cmp ${op1.getOperandName()}, ${op2.getOperandName()}\n`)
     }
 
     public static comment(s: string) {

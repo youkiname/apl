@@ -66,8 +66,8 @@ export const RULES = [
     new Rule(["VARIABLE"], args => new s.Factor(args)),
 
     new Rule(["CallFunction"], args => new s.Term(args[0] as s.Expression, null, null)),
-    new Rule(["Term", "STAR", "FLOAT_NUMBER"], args => new s.Term(args[0] as s.Expression, "*", args[2] as s.Statement)),
-    new Rule(["Term", "SLASH", "FLOAT_NUMBER"], args => new s.Term(args[0] as s.Expression, "/", args[2] as s.Statement)),
+    new Rule(["Term", "STAR", "FLOAT_NUMBER"], args => new s.Term(args[0] as s.Expression, "*", new s.Factor([args[2]]))),
+    new Rule(["Term", "SLASH", "FLOAT_NUMBER"], args => new s.Term(args[0] as s.Expression, "/", new s.Factor([args[2]]))),
     new Rule(["Term", "STAR", "VARIABLE"], args => new s.Term(args[0] as s.Expression, "*", new s.Factor([args[2]]))),
     new Rule(["Term", "SLASH", "VARIABLE"], args => new s.Term(args[0] as s.Expression, "/", new s.Factor([args[2]]))),
     new Rule(["Term", "STAR", "Factor"], args => new s.Term(args[0] as s.Expression, "*", args[2] as s.Statement)),
@@ -85,6 +85,11 @@ export const RULES = [
     new Rule(["Expression", "EQUAL", "Expression"], args => new s.Comparing(args[0] as s.Expression, "==", args[2] as s.Expression)),
     new Rule(["Expression", "NOT_EQUAL", "Expression"], args => new s.Comparing(args[0] as s.Expression, "!=", args[2] as s.Expression)),
 
+    new Rule(["Expression", "OR", "Expression"], args => new s.Or(args[0] as s.Expression, args[2] as s.Expression)),
+    new Rule(["Expression", "AND", "Expression"], args => new s.And(args[0] as s.Expression, args[2] as s.Expression)),
+
+    new Rule(["Or"], args => new s.Expression(args)),
+    new Rule(["And"], args => new s.Expression(args)),
     new Rule(["Comparing"], args => new s.Expression(args)),
     new Rule(["Add"], args => new s.Expression(args)),
 

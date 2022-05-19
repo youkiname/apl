@@ -34,6 +34,12 @@ export class Register extends MemoryBuffer {
     }
 }
 
+export class IntConstant extends MemoryBuffer {
+    constructor (value: number) {
+        super(value.toString(), 'int')
+    }
+}
+
 export const ZERO = new MemoryBuffer('0', 'int')
 
 export const EAX = new Register('eax')

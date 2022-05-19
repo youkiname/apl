@@ -2,7 +2,7 @@ import { CodeBuffer } from "../code-generator"
 import { Env } from "../env";
 import { Token } from "../lexer/lexer"
 import { Evalable, FunctionParameter, Variable } from "./models";
-import { MemoryBuffer, Register, EAX, EBX, ECX, EDX, ZERO } from "./models"
+import { MemoryBuffer, Register, IntConstant, EAX, EBX, ECX, EDX, ZERO } from "./models"
 
 
 function parseFunctionParams(rawValue: string): FunctionParameter[] {
@@ -114,7 +114,8 @@ export class Term extends Statement {
             return leftName
         } else {
             CodeBuffer.mov(EAX, leftName)
-            CodeBuffer.idiv(rightName)
+            CodeBuffer.mov(EDX, ZERO)
+            CodeBuffer.div(rightName)
             env.freeRegister(leftName)
             env.freeRegister(rightName)
             return EAX
@@ -177,19 +178,19 @@ export class Comparing extends Statement {
         CodeBuffer.emit(`lahf\n`)
         switch (this.sign) {
             case "==": {
-                CodeBuffer.emit(`and ah, 64\n`)
+                CodeBuffer.and(new Register('ah'), new IntConstant(64))
                 break;
             }
             case "<": {
-                CodeBuffer.emit(`and ah, 1\n`)
+                CodeBuffer.and(new Register('ah'), new IntConstant(1))
                 break;
             }
             case ">": {
-                CodeBuffer.emit(`and ah, 65\n`)
+                CodeBuffer.and(new Register('ah'), new IntConstant(65))
                 CodeBuffer.cmp(EAX, ZERO)
                 const tempLabel = env.newLabel()
                 CodeBuffer.emit(`jne ${tempLabel}\n`)
-                CodeBuffer.mov(EAX, new MemoryBuffer('1', 'int'))
+                CodeBuffer.mov(EAX, new IntConstant(1))
                 CodeBuffer.emit(`jmp end${tempLabel}\n`)
                 CodeBuffer.emit(`${tempLabel}:\n`)
                 CodeBuffer.mov(EAX, ZERO)
@@ -197,15 +198,15 @@ export class Comparing extends Statement {
                 break;
             }
             case "<=": {
-                CodeBuffer.emit(`and ah, 65\n`)
+                CodeBuffer.and(new Register('ah'), new IntConstant(65))
                 break;
             }
             case ">=": {
-                CodeBuffer.emit(`and ah, 1\n`)
+                CodeBuffer.and(new Register('ah'), new IntConstant(1))
                 CodeBuffer.cmp(EAX, ZERO)
                 const tempLabel = env.newLabel()
                 CodeBuffer.emit(`jne ${tempLabel}\n`)
-                CodeBuffer.mov(EAX, new MemoryBuffer('1', 'int'))
+                CodeBuffer.mov(EAX, new IntConstant(1))
                 CodeBuffer.emit(`jmp end${tempLabel}\n`)
                 CodeBuffer.emit(`${tempLabel}:\n`)
                 CodeBuffer.mov(EAX, ZERO)
@@ -216,6 +217,44 @@ export class Comparing extends Statement {
         const resultRegister = env.getFreeRegister()
         CodeBuffer.mov(resultRegister, EAX)
         return resultRegister
+    }
+}
+
+export class LogicalOperator extends Statement {
+    private left: Expression
+    private right: Expression
+    private op: string
+
+    constructor (left: Expression, op: string, right: Expression) {
+        super()
+        this.left = left
+        this.right = right
+        this.op = op
+    }
+
+    public eval() {
+        const leftRegister = this.left.eval()
+        const rightRegister = this.right.eval()
+        CodeBuffer.comment(`--- ${this.op} ---`)
+        if (this.op == 'or') {
+            CodeBuffer.or(leftRegister, rightRegister)
+        } else {
+            CodeBuffer.and(leftRegister, rightRegister)
+        }
+        env.freeRegister(rightRegister)
+        return leftRegister
+    }
+}
+
+export class Or extends LogicalOperator {
+    constructor (left: Expression, right: Expression) {
+        super(left, 'or', right)
+    }
+}
+
+export class And extends LogicalOperator {
+    constructor (left: Expression, right: Expression) {
+        super(left, 'and', right)
     }
 }
 
