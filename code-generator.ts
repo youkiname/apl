@@ -30,11 +30,11 @@ export class CodeBuffer {
     }
 
     public static and(op1: MemoryBuffer, op2: MemoryBuffer) {
-        CodeBuffer.emit(`and ${op1.getOperandName()} ${op2.getOperandName()}\n`)
+        CodeBuffer.emit(`and ${op1.getOperandName()}, ${op2.getOperandName()}\n`)
     }
 
     public static or(op1: MemoryBuffer, op2: MemoryBuffer) {
-        CodeBuffer.emit(`or ${op1.getOperandName()} ${op2.getOperandName()}\n`)
+        CodeBuffer.emit(`or ${op1.getOperandName()}, ${op2.getOperandName()}\n`)
     }
 
     public static push(op: MemoryBuffer) {
