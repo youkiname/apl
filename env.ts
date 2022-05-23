@@ -1,6 +1,6 @@
 import { CodeBuffer } from "./code-generator"
 import { Variable } from "./syntax/models"
-import { MemoryBuffer, Register } from "./syntax/models"
+import { MemoryBuffer, Register, EDX, EBX, ECX } from "./syntax/models"
 
 export class Env {
     public name: string
@@ -10,10 +10,10 @@ export class Env {
     public children: { [key: string]: Env }
     private labels: { [key: string]: string }
 
-    private freeRegisters = [
-        new Register('edx'),
-        new Register('ebx'),
-        new Register('ecx')
+    private freeRegisters: MemoryBuffer[] = [
+        EDX,
+        EBX,
+        ECX
     ]
     private lastLabelId = 0
     private lastTempStringId = 0
@@ -38,10 +38,10 @@ export class Env {
     }
 
     public getFreeRegister(): Register {
-        return this.freeRegisters.pop()
+        return this.freeRegisters.pop() as Register
     }
 
-    public freeRegister(register: Register) {
+    public freeRegister(register: MemoryBuffer) {
         this.freeRegisters.push(register)
     }
 

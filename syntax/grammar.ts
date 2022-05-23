@@ -59,7 +59,7 @@ export class Grammar {
 
     private applyRule(rule: Rule) {
         const newItem = rule.getStatement(this.statements.slice(this.startIndex, this.endIndex))
-        console.log(this.statements.map(s => s.toString()));
+        // console.log(this.statements.map(s => s.toString()));
         this.joinElements(
             this.startIndex,
             this.endIndex,

@@ -59,8 +59,43 @@ export class VariableInit extends Statement {
     }
 }
 
-export class Factor extends Statement {
+export class IntNumber extends Statement {
+    private factor: MemoryBuffer
 
+    constructor (factor: MemoryBuffer) {
+        super()
+        this.factor = factor
+    }
+
+    public eval() {
+        const register = env.getFreeRegister()
+        CodeBuffer.mov(register, this.factor)
+        return register
+    }
+}
+
+export class FloatNumber extends Statement {
+    private factor: MemoryBuffer
+
+    constructor (factor: MemoryBuffer) {
+        super()
+        this.factor = factor
+    }
+
+    public eval() {
+        const register = env.getFreeRegister()
+        const exponent = parseInt(this.factor.name.split('.')[0])
+        const mantissa = parseInt(this.factor.name.split('.')[1])
+
+        CodeBuffer.mov(register, new IntConstant(exponent))
+        CodeBuffer.emit(`sal ${register.name}, 16\n`)
+        CodeBuffer.emit(`mov ${register.low}, ${mantissa}\n`)
+
+        return register
+    }
+}
+
+export class Factor extends Statement {
     constructor (args: Array<Evalable> = []) {
         super(args)
     }
@@ -69,21 +104,35 @@ export class Factor extends Statement {
         if (this.args[0] instanceof Expression) {
             return this.args[0].eval()
         }
-
-        const register = env.getFreeRegister()
         const factor = this.args[0].eval()
 
         if (this.isNumeric(factor.name)) {
-            CodeBuffer.mov(register, factor)
-        } else {
-            const variable = env.getVariable(factor.name)
-            CodeBuffer.mov(register, variable)
+            return this.processNumber(factor)
         }
+
+        const register = env.getFreeRegister()
+        const variable = env.getVariable(factor.name)
+        CodeBuffer.mov(register, variable)
         return register
     }
 
     private isNumeric(s: string): boolean {
         return !isNaN(+s)
+    }
+
+    private processNumber(factor: MemoryBuffer) {
+        if (this.getNumberType(factor.name) == 'float') {
+            return new FloatNumber(factor).eval()
+        } else {
+            return new IntNumber(factor).eval()
+        }
+    }
+
+    private getNumberType(number: string) {
+        if (number.includes('.')) {
+            return 'float'
+        }
+        return 'int'
     }
 }
 
@@ -554,7 +603,12 @@ export class Print extends Statement {
             }
             switch (variable.type) {
                 case "float": {
-                    CodeBuffer.emit(`cinvoke printf, formatfloat, dword [${variable.name}], dword [${variable.name}+4]\n`)
+                    const register = env.getFreeRegister()
+                    CodeBuffer.mov(register, variable)
+                    CodeBuffer.emit(`mov word [t1], ${register.low}\n`)
+                    CodeBuffer.emit(`sar ${register.name}, 16\n`)
+                    CodeBuffer.emit(`mov [t2], ${register.name}\n`)
+                    CodeBuffer.emit(`cinvoke printf, formatfloat, [t2], [t1]\n`)
                     break;
                 }
                 default: { // int
