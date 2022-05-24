@@ -68,7 +68,7 @@ export class IntNumber extends Statement {
     }
 
     public eval() {
-        const register = env.getFreeRegister()
+        const register = env.getFreeRegister('int')
         CodeBuffer.mov(register, this.factor)
         return register
     }
@@ -83,13 +83,17 @@ export class FloatNumber extends Statement {
     }
 
     public eval() {
-        const register = env.getFreeRegister()
-        const exponent = parseInt(this.factor.name.split('.')[0])
-        const mantissa = parseInt(this.factor.name.split('.')[1])
+        const register = env.getFreeRegister('float')
+        const exponent = this.factor.name.split('.')[0]
+        let mantissa = this.factor.name.split('.')[1]
+        if (mantissa.length < 4) {
+            mantissa = mantissa + '0'.repeat(4 - mantissa.length)
+        }
+        if (mantissa.length > 4) {
+            mantissa = mantissa.substring(0, 4);
+        }
 
-        CodeBuffer.mov(register, new IntConstant(exponent))
-        CodeBuffer.emit(`sal ${register.name}, 16\n`)
-        CodeBuffer.emit(`mov ${register.low}, ${mantissa}\n`)
+        CodeBuffer.mov(register, new IntConstant(parseInt(exponent + mantissa)))
 
         return register
     }
@@ -110,8 +114,8 @@ export class Factor extends Statement {
             return this.processNumber(factor)
         }
 
-        const register = env.getFreeRegister()
         const variable = env.getVariable(factor.name)
+        const register = env.getFreeRegister(variable.type)
         CodeBuffer.mov(register, variable)
         return register
     }
@@ -153,22 +157,37 @@ export class Term extends Statement {
             return this.left.eval()
         }
 
-        const leftName = this.left.eval()
+        let leftName = this.left.eval()
         const rightName = this.right.eval()
 
         CodeBuffer.comment("---MULTIPLY---")
         if (this.sign == "*") {
-            CodeBuffer.imul(leftName, rightName)
-            env.freeRegister(rightName)
-            return leftName
-        } else {
-            CodeBuffer.mov(EAX, leftName)
-            CodeBuffer.mov(EDX, ZERO)
-            CodeBuffer.div(rightName)
-            env.freeRegister(leftName)
-            env.freeRegister(rightName)
-            return EAX
+            return this.processMultiply(leftName, rightName)
         }
+        return this.processDivision(leftName, rightName)
+    }
+
+    private processMultiply(leftName: MemoryBuffer, rightName: MemoryBuffer) {
+        CodeBuffer.imul(leftName, rightName)
+        env.freeRegister(rightName)
+        return leftName
+    }
+
+    private processDivision(leftName: MemoryBuffer, rightName: MemoryBuffer) {
+        if (leftName.type == 'int') {
+            CodeBuffer.imul(leftName, new IntConstant(10000))
+        }
+
+        CodeBuffer.mov(EAX('float'), leftName)
+        CodeBuffer.mov(EDX('int'), ZERO)
+        CodeBuffer.div(rightName)
+        env.freeRegister(leftName)
+        env.freeRegister(rightName)
+        if (leftName.type == 'float' && rightName.type == 'float') {
+            CodeBuffer.imul(EAX('float'), new IntConstant(10000))
+
+        }
+        return EAX('float')
     }
 }
 
@@ -223,7 +242,7 @@ export class Comparing extends Statement {
         CodeBuffer.cmp(leftRegister, rightRegister)
         env.freeRegister(leftRegister)
         env.freeRegister(rightRegister)
-        CodeBuffer.mov(EAX, ZERO)
+        CodeBuffer.mov(EAX('int'), ZERO)
         CodeBuffer.emit(`lahf\n`)
         switch (this.sign) {
             case "==": {
@@ -236,13 +255,13 @@ export class Comparing extends Statement {
             }
             case ">": {
                 CodeBuffer.and(new Register('ah'), new IntConstant(65))
-                CodeBuffer.cmp(EAX, ZERO)
+                CodeBuffer.cmp(EAX('int'), ZERO)
                 const tempLabel = env.newLabel()
                 CodeBuffer.emit(`jne ${tempLabel}\n`)
-                CodeBuffer.mov(EAX, new IntConstant(1))
+                CodeBuffer.mov(EAX('int'), new IntConstant(1))
                 CodeBuffer.emit(`jmp end${tempLabel}\n`)
                 CodeBuffer.emit(`${tempLabel}:\n`)
-                CodeBuffer.mov(EAX, ZERO)
+                CodeBuffer.mov(EAX('int'), ZERO)
                 CodeBuffer.emit(`end${tempLabel}:\n`)
                 break;
             }
@@ -252,19 +271,19 @@ export class Comparing extends Statement {
             }
             case ">=": {
                 CodeBuffer.and(new Register('ah'), new IntConstant(1))
-                CodeBuffer.cmp(EAX, ZERO)
+                CodeBuffer.cmp(EAX('int'), ZERO)
                 const tempLabel = env.newLabel()
                 CodeBuffer.emit(`jne ${tempLabel}\n`)
-                CodeBuffer.mov(EAX, new IntConstant(1))
+                CodeBuffer.mov(EAX('int'), new IntConstant(1))
                 CodeBuffer.emit(`jmp end${tempLabel}\n`)
                 CodeBuffer.emit(`${tempLabel}:\n`)
-                CodeBuffer.mov(EAX, ZERO)
+                CodeBuffer.mov(EAX('int'), ZERO)
                 CodeBuffer.emit(`end${tempLabel}:\n`)
                 break;
             }
         }
-        const resultRegister = env.getFreeRegister()
-        CodeBuffer.mov(resultRegister, EAX)
+        const resultRegister = env.getFreeRegister('int')
+        CodeBuffer.mov(resultRegister, EAX('int'))
         return resultRegister
     }
 }
@@ -511,7 +530,7 @@ export class Return extends Statement {
     public eval() {
         const label = env.getLabel('fun')
         const resultRegister = this.expression.eval()
-        CodeBuffer.mov(EAX, resultRegister)
+        CodeBuffer.mov(EAX(resultRegister.type), resultRegister)
         env.freeRegister(resultRegister)
         CodeBuffer.emit(`jmp end${label}\n`)
         return null
@@ -541,7 +560,7 @@ export class Function extends Statement {
 
         for (let param of this.params) {
             let variable = env.addVariable(param.convert())
-            const register = env.getFreeRegister()
+            const register = env.getFreeRegister(variable.type)
             CodeBuffer.pop(register)
             CodeBuffer.mov(variable, register)
             env.freeRegister(register)
@@ -549,7 +568,7 @@ export class Function extends Statement {
         const label = env.newLabel('fun')
         CodeBuffer.emit(`${label}:\n`)
         this.block.eval()
-        CodeBuffer.mov(EAX, ZERO)
+        CodeBuffer.mov(EAX('int'), ZERO)
         CodeBuffer.emit(`end${label}:\n`)
         env = env.parent
         return null
@@ -583,7 +602,7 @@ export class CallFunction extends Statement {
             throw new Error(`Call undefined function '${this.name}'`);
         }
         f.eval()
-        return EAX
+        return EAX('int')
     }
 }
 
@@ -603,12 +622,18 @@ export class Print extends Statement {
             }
             switch (variable.type) {
                 case "float": {
-                    const register = env.getFreeRegister()
-                    CodeBuffer.mov(register, variable)
-                    CodeBuffer.emit(`mov word [t1], ${register.low}\n`)
-                    CodeBuffer.emit(`sar ${register.name}, 16\n`)
-                    CodeBuffer.emit(`mov [t2], ${register.name}\n`)
-                    CodeBuffer.emit(`cinvoke printf, formatfloat, [t2], [t1]\n`)
+                    // const register = env.getFreeRegister()
+                    // CodeBuffer.mov(register, variable)
+                    // CodeBuffer.emit(`mov word [t1], ${register.low}\n`)
+                    // CodeBuffer.emit(`sar ${register.name}, 16\n`)
+                    // CodeBuffer.emit(`mov [t2], ${register.name}\n`)
+                    // CodeBuffer.emit(`cinvoke printf, formatfloat, [t2], [t1]\n`)
+                    CodeBuffer.mov(EAX('float'), variable)
+                    CodeBuffer.mov(EDX('int'), ZERO)
+                    CodeBuffer.mov(EBX('int'), new IntConstant(10000))
+                    CodeBuffer.div(EBX('int'))
+
+                    CodeBuffer.emit(`cinvoke printf, formatfloat, eax, edx\n`)
                     break;
                 }
                 default: { // int

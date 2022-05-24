@@ -85,12 +85,9 @@ invoke ExitProcess
 
 section '.data' data readable writeable
 formatint db "%i", 13, 10, 0
-formatfloat db "%i.%i", 13, 10, 0
+formatfloat db "%i.%04X", 13, 10, 0
 formatstr db "%s", 13, 10, 0
-t1 dd ?
-t2 dd ?
 `
-
     public static importTemplate = `
 section '.idata' import data readable writable
 library kernel,'KERNEL32.DLL', msvcrt,'msvcrt.dll'

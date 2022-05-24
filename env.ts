@@ -10,7 +10,7 @@ export class Env {
     public children: { [key: string]: Env }
     private labels: { [key: string]: string }
 
-    private freeRegisters: MemoryBuffer[] = [
+    private freeRegisters: Function[] = [
         EDX,
         EBX,
         ECX
@@ -37,12 +37,27 @@ export class Env {
         return this.labels[type]
     }
 
-    public getFreeRegister(): Register {
-        return this.freeRegisters.pop() as Register
+    public getFreeRegister(type: string): Register {
+        return this.freeRegisters.pop()(type)
     }
 
     public freeRegister(register: MemoryBuffer) {
-        this.freeRegisters.push(register)
+        if (register instanceof Register) {
+            switch (register.name) {
+                case 'edx': {
+                    this.freeRegisters.push(EDX)
+                    break;
+                }
+                case 'ebx': {
+                    this.freeRegisters.push(EBX)
+                    break;
+                }
+                case 'ecx': {
+                    this.freeRegisters.push(ECX)
+                    break;
+                }
+            }
+        }
     }
 
     public saveString(value: string): string {

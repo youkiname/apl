@@ -3,7 +3,7 @@ import { Grammar } from "./syntax/grammar";
 import { Generator } from "./code-generator";
 
 const code = `
-float a = 125.002
+float a = 10.0001
 print(a)
 `
 

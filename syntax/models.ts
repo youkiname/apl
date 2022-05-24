@@ -29,11 +29,8 @@ export class MemoryBuffer {
 }
 
 export class Register extends MemoryBuffer {
-    readonly low: string
-
-    constructor (name: string, low: string = "unknownLowRegister") {
-        super(name, 'register')
-        this.low = low
+    constructor (name: string, type: string = 'int') {
+        super(name, type)
     }
 }
 
@@ -45,10 +42,18 @@ export class IntConstant extends MemoryBuffer {
 
 export const ZERO = new MemoryBuffer('0', 'int')
 
-export const EAX = new Register('eax', 'ax')
-export const EDX = new Register('edx', 'dx')
-export const EBX = new Register('ebx', 'bx')
-export const ECX = new Register('ecx', 'cx')
+export function EAX(type: string) {
+    return new Register('eax', type)
+}
+export function EDX(type: string) {
+    return new Register('edx', type)
+}
+export function EBX(type: string) {
+    return new Register('ebx', type)
+}
+export function ECX(type: string) {
+    return new Register('ecx', type)
+}
 
 export class Variable extends MemoryBuffer {
     readonly value: string
