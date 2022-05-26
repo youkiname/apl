@@ -1,5 +1,7 @@
 import { writeFile } from 'fs';
-import { MemoryBuffer } from './syntax/models';
+import { MemoryBuffer } from '../syntax/models';
+import { readFileSync } from 'fs';
+
 
 export class CodeBuffer {
     private static code: string = ""
@@ -70,38 +72,11 @@ export class CodeBuffer {
     }
 }
 
-export class Generator {
-    public static beginTemplate = `
-format PE CONSOLE 4.0
-entry BeginCode
-include 'win32a.inc'
-
-section '.code' executable readable writeable
-BeginCode:
-`
-
-    public static dataTemplate = `
-invoke ExitProcess
-
-section '.data' data readable writeable
-formatint db "%i", 13, 10, 0
-formatfloat db "%i.%03i", 13, 10, 0
-formatstr db "%s", 13, 10, 0
-`
-    public static importTemplate = `
-section '.idata' import data readable writable
-library kernel,'KERNEL32.DLL', msvcrt,'msvcrt.dll'
-import kernel, ExitProcess,'ExitProcess'
-import msvcrt,printf,'printf', getch, '_getch'
-`
-
+export class Translator {
     public static compile() {
-        const data = (Generator.beginTemplate +
-            CodeBuffer.get() +
-            Generator.dataTemplate +
-            CodeBuffer.getDataSection() +
-            Generator.importTemplate);
-        writeFile('main.asm', data, (err) => {
+        const template = readFileSync('./translator/template.asm', 'utf-8');
+        const code = template.replace(";;code;;", CodeBuffer.get()).replace(";;data;;", CodeBuffer.getDataSection())
+        writeFile('main.asm', code, (err) => {
             if (err) throw err;
             console.log('The file has been saved!');
         });

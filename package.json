@@ -4,8 +4,8 @@
   "description": "Handmade Programming Language",
   "main": "index.js",
   "scripts": {
-    "run": "npx tsc index.ts && node index.js && fasm main.asm && main.exe",
-    "build": "npx tsc index.ts && node index.js && fasm main.asm",
+    "run": "npx tsc apl.ts && node apl.js && fasm main.asm && main.exe",
+    "build": "npx tsc apl.ts && node apl.js && fasm main.asm",
     "fasm": "fasm main.asm && main.exe"
   },
   "repository": {

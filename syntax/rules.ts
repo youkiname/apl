@@ -1,4 +1,3 @@
-import { join } from "path";
 import { Token } from "../lexer/lexer";
 import { Evalable } from "./models"
 import * as s from './statements';
@@ -42,8 +41,7 @@ export const RULES = [
     new Rule(["FUN_INIT", "INIT_FUN_PARAMS", "Block"], args => new s.Function(args[0] as Token, args[2] as s.Block, args[1] as Token)),
     new Rule(["FUN_INIT", ")", "Block"], args => new s.Function(args[0] as Token, args[2] as s.Block)),
 
-    new Rule(["FUN_NAME", "FUN_ARGS"], args => new s.CallFunction(args[0] as Token, args[1] as Token)),
-    new Rule(["FUN_NAME", ")"], args => new s.CallFunction(args[0] as Token)),
+    new Rule(["FUN_CALL"], args => new s.CallFunction(args[0] as Token)),
 
     new Rule(["WHILE", "Expression", "Block"], args => new s.While(args[1] as s.Expression, args[2] as s.Block)),
     new Rule(["IF", "Expression", "Block"], args => new s.If(args[1] as s.Expression, args[2] as s.Block)),
@@ -61,8 +59,8 @@ export const RULES = [
     new Rule(["VARIABLE", "ASSIGN"], args => new s.PreReAssign(args[0].eval().name)),
     new Rule(["PreAssign", "Expression", "NEWLINE"], args => new s.Assign(args[0] as s.PreAssign, args[1] as s.Expression)),
     new Rule(["PreReAssign", "Expression", "NEWLINE"], args => new s.ReAssign(args[0] as s.PreReAssign, args[1] as s.Expression)),
-    new Rule(["PRINT", "(", "FUN_ARGS", "NEWLINE"], args => new s.Print(args[2] as Token)),
-    new Rule(["PRINT", "(", "STRING_CONST", ")", "NEWLINE"], args => new s.PrintString(args[2] as Token)),
+    new Rule(["PRINT", "NEWLINE"], args => new s.Print(args[0] as Token)),
+    new Rule(["PRINT_STRING", "NEWLINE"], args => new s.PrintString(args[0] as Token)),
 
     new Rule(["(", "Expression", ")"], args => new s.Factor([args[1]])),
     new Rule(["NUMBER"], args => new s.Factor(args)),
@@ -72,6 +70,7 @@ export const RULES = [
     new Rule(["CallFunction"], args => new s.Term(args[0] as s.Expression, null, null)),
     new Rule(["Term", "STAR", "Term"], args => new s.Term(args[0] as s.Expression, "*", args[2] as s.Statement)),
     new Rule(["Term", "SLASH", "Term"], args => new s.Term(args[0] as s.Expression, "/", args[2] as s.Statement)),
+    new Rule(["Term", "%", "Term"], args => new s.Term(args[0] as s.Expression, "%", args[2] as s.Statement)),
     new Rule(["Factor"], args => new s.Term(args[0] as s.Statement, null, null)),
 
     new Rule(["Expression", "PLUS", "Expression"], args => new s.Add(args[0] as s.Expression, "+", args[2] as s.Statement)),
@@ -100,7 +99,6 @@ export const RULES = [
 
     new Rule(["RETURN", "Expression", "NEWLINE"], args => new s.Return(args[1] as s.Expression)),
     new Rule(["Function"], args => new s.Statement(args)),
-    // new Rule(["CallFunction"], args => new s.Statement(args)),
     new Rule(["Return"], args => new s.Statement(args)),
     new Rule(["Assign"], args => new s.Statement(args)),
     new Rule(["ReAssign"], args => new s.Statement(args)),
@@ -110,5 +108,6 @@ export const RULES = [
     new Rule(["Print"], args => new s.Statement(args)),
     new Rule(["PrintString"], args => new s.Statement(args)),
     new Rule(["Statement", "Statement"], args => new s.Statement(args)),
+    // new Rule(["Expression"], args => new s.Statement(args)),
     new Rule(["NEWLINE"], args => new s.Statement(args)),
 ]

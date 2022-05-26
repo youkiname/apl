@@ -1,9 +1,10 @@
-import { CodeBuffer } from "../code-generator"
+import { CodeBuffer } from "../translator/translator"
 import { Env } from "../env";
 import { Token } from "../lexer/lexer"
 import { Evalable, FunctionParameter, Variable } from "./models";
 import { MemoryBuffer, Register, IntConstant, EAX, EBX, ECX, EDX, ZERO } from "./models"
 
+let env = new Env()
 
 function parseFunctionParams(rawValue: string): FunctionParameter[] {
     const result = []
@@ -25,7 +26,29 @@ function convertToFloat(factor: MemoryBuffer) {
     return factor
 }
 
-let env = new Env()
+function __convertToBool(factor: MemoryBuffer, booleans: any) {
+    const label = env.newLabel()
+    CodeBuffer.cmp(factor, ZERO)
+    CodeBuffer.mov(factor, booleans['false'])
+    CodeBuffer.emit(`je ${label}\n`)
+    CodeBuffer.mov(factor, booleans['true'])
+    CodeBuffer.emit(`${label}:\n`)
+    return factor
+}
+
+function convertToBool(factor: MemoryBuffer) {
+    return __convertToBool(factor, {
+        "true": new IntConstant(1),
+        "false": ZERO
+    })
+}
+
+function convertToBoolReverse(factor: MemoryBuffer) {
+    return __convertToBool(factor, {
+        "false": new IntConstant(1),
+        "true": ZERO
+    })
+}
 
 export class Statement {
     public args: Array<Evalable>
@@ -172,9 +195,18 @@ export class Term extends Statement {
 
         CodeBuffer.comment("---MULTIPLY---")
         if (this.sign == "*") {
-            return this.processMultiply(leftName, rightName)
         }
-        return this.processDivision(leftName, rightName)
+        switch (this.sign) {
+            case "*": {
+                return this.processMultiply(leftName, rightName)
+            }
+            case "/": {
+                return this.processDivision(leftName, rightName)
+            }
+            case "%": {
+                return this.processModulo(leftName, rightName)
+            }
+        }
     }
 
     private processMultiply(leftName: MemoryBuffer, rightName: MemoryBuffer) {
@@ -208,6 +240,15 @@ export class Term extends Statement {
             CodeBuffer.imul(EAX('float'), new IntConstant(1000))
         }
         return EAX('float')
+    }
+
+    private processModulo(leftName: MemoryBuffer, rightName: MemoryBuffer) {
+        CodeBuffer.mov(EAX('int'), leftName)
+        CodeBuffer.mov(EDX('int'), ZERO)
+        CodeBuffer.div(rightName)
+        CodeBuffer.mov(leftName, EDX('int'))
+        env.freeRegister(rightName)
+        return leftName
     }
 }
 
@@ -273,6 +314,11 @@ export class Comparing extends Statement {
                 CodeBuffer.and(new Register('ah'), new IntConstant(64))
                 break;
             }
+            case "!=": {
+                CodeBuffer.and(new Register('ah'), new IntConstant(64))
+                convertToBoolReverse(EAX('int'))
+                break;
+            }
             case "<": {
                 CodeBuffer.and(new Register('ah'), new IntConstant(1))
                 break;
@@ -331,6 +377,8 @@ export class LogicalOperator extends Statement {
         if (this.op == 'or') {
             CodeBuffer.or(leftRegister, rightRegister)
         } else {
+            convertToBool(leftRegister)
+            convertToBool(rightRegister)
             CodeBuffer.and(leftRegister, rightRegister)
         }
         env.freeRegister(rightRegister)
@@ -603,12 +651,13 @@ export class CallFunction extends Statement {
     private name: string
     private params: string[] = []
 
-    constructor (funName: Token, params: Token = null) {
+    constructor (funName: Token) {
         super()
-        this.name = funName.value.slice(0, -1)
+        this.name = funName.value.split('(', 1)[0]
+        let params = funName.value.split('(', 2)[1].slice(0, -1)
         if (params) {
             //  remove spaces, remove end bracket ')' and split params to array
-            this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
+            this.params = params.replace(/\s/g, '').split(',');
         }
     }
 
@@ -633,9 +682,13 @@ export class CallFunction extends Statement {
 export class Print extends Statement {
     private params: string[]
 
-    constructor (params: Token) {
+    constructor (nameWithArgs: Token) {
         super()
-        this.params = params.value.replace(/\s/g, '').slice(0, -1).split(',');
+        let params = nameWithArgs.value.split('(', 2)[1].slice(0, -1)
+        if (params) {
+            //  remove spaces, remove end bracket ')' and split params to array
+            this.params = params.replace(/\s/g, '').split(',');
+        }
     }
 
     public eval() {
@@ -646,12 +699,6 @@ export class Print extends Statement {
             }
             switch (variable.type) {
                 case "float": {
-                    // const register = env.getFreeRegister()
-                    // CodeBuffer.mov(register, variable)
-                    // CodeBuffer.emit(`mov word [t1], ${register.low}\n`)
-                    // CodeBuffer.emit(`sar ${register.name}, 16\n`)
-                    // CodeBuffer.emit(`mov [t2], ${register.name}\n`)
-                    // CodeBuffer.emit(`cinvoke printf, formatfloat, [t2], [t1]\n`)
                     CodeBuffer.mov(EAX('float'), variable)
                     CodeBuffer.mov(EDX('int'), ZERO)
                     CodeBuffer.mov(EBX('int'), new IntConstant(1000))
@@ -673,9 +720,9 @@ export class Print extends Statement {
 export class PrintString extends Statement {
     private stringConstant: string
 
-    constructor (stringConstant: Token) {
+    constructor (nameWithArgs: Token) {
         super()
-        this.stringConstant = stringConstant.value
+        this.stringConstant = nameWithArgs.value.split('(', 2)[1].slice(0, -1)
     }
 
     public eval() {

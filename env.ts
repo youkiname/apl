@@ -1,4 +1,4 @@
-import { CodeBuffer } from "./code-generator"
+import { CodeBuffer } from "./translator/translator"
 import { Variable } from "./syntax/models"
 import { MemoryBuffer, Register, EDX, EBX, ECX } from "./syntax/models"
 
@@ -68,6 +68,9 @@ export class Env {
     }
 
     public addVariable(variable: Variable): Variable {
+        if (variable.name.includes('__')) {
+            throw Error(`${variable.name}: variable name mustn't includes '__'`)
+        }
         const savedVariable = new Variable(
             this.getNamePrefix() + variable.name,
             variable.type,
