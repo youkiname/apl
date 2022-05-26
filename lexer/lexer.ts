@@ -89,6 +89,15 @@ export class Token {
     public toString(): string {
         return this.type.name
     }
+
+    public getTree(): object {
+        return {
+            'token': {
+                'type': this.type.name,
+                'value': this.value
+            }
+        }
+    }
 }
 
 

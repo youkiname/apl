@@ -67,6 +67,13 @@ export class Statement {
         }
         return null
     }
+
+    public getTree(): object {
+
+        return {
+            "stmt": this.args.map(arg => arg.getTree())
+        }
+    }
 }
 
 export class VariableType extends Statement {
@@ -75,6 +82,10 @@ export class VariableType extends Statement {
     constructor (name: string) {
         super()
         this.name = name
+    }
+
+    public getTree(): object {
+        return { "type": this.name }
     }
 }
 
@@ -90,6 +101,13 @@ export class VariableInit extends Statement {
     public convert(): Variable {
         return new Variable(this.name, this.type, '?')
     }
+
+    public getTree(): object {
+        return {
+            "type": this.type,
+            "name": this.name
+        }
+    }
 }
 
 export class IntNumber extends Statement {
@@ -104,6 +122,12 @@ export class IntNumber extends Statement {
         const register = env.getFreeRegister('int')
         CodeBuffer.mov(register, this.factor)
         return register
+    }
+
+    public getTree(): object {
+        return {
+            "int": this.factor.name
+        }
     }
 }
 
@@ -130,6 +154,12 @@ export class FloatNumber extends Statement {
 
         return register
     }
+
+    public getTree() {
+        return {
+            "float": this.factor.name
+        }
+    }
 }
 
 export class Factor extends Statement {
@@ -151,6 +181,12 @@ export class Factor extends Statement {
         const register = env.getFreeRegister(variable.type)
         CodeBuffer.mov(register, variable)
         return register
+    }
+
+    public getTree() {
+        return {
+            "factor": this.args[0].getTree()
+        }
     }
 
     private isNumeric(s: string): boolean {
@@ -209,6 +245,17 @@ export class Term extends Statement {
             case "div": {
                 return this.processIntDivision(leftName, rightName)
             }
+        }
+    }
+
+    public getTree() {
+        if (!this.sign) {
+            return {
+                'term': this.left.getTree()
+            }
+        }
+        return {
+            'term': [this.left.getTree(), this.sign, this.right.getTree()]
         }
     }
 
@@ -293,6 +340,17 @@ export class Add extends Statement {
 
         return leftName
     }
+
+    public getTree() {
+        if (!this.sign) {
+            return {
+                'term': this.left.getTree()
+            }
+        }
+        return {
+            'add': [this.left.getTree(), this.sign, this.right.getTree()]
+        }
+    }
 }
 
 export class Comparing extends Statement {
@@ -363,6 +421,12 @@ export class Comparing extends Statement {
         CodeBuffer.mov(resultRegister, EAX('int'))
         return resultRegister
     }
+
+    public getTree(): object {
+        return {
+            'compare': [this.left.getTree(), this.sign, this.right.getTree()]
+        }
+    }
 }
 
 export class LogicalOperator extends Statement {
@@ -391,6 +455,12 @@ export class LogicalOperator extends Statement {
         env.freeRegister(rightRegister)
         return leftRegister
     }
+
+    public getTree(): object {
+        let result = {}
+        result[this.op] = [this.left.getTree(), this.right.getTree()]
+        return result
+    }
 }
 
 export class Or extends LogicalOperator {
@@ -409,6 +479,12 @@ export class Expression extends Statement {
     public eval() {
         return this.args[0].eval()
     }
+
+    public getTree(): object {
+        return {
+            'expression': this.args[0].getTree()
+        }
+    }
 }
 
 export class PreAssign extends Statement {
@@ -418,6 +494,12 @@ export class PreAssign extends Statement {
         super()
         this.variable = variable
     }
+
+    public getTree(): object {
+        return {
+            'preAssign': this.variable.getTree()
+        }
+    }
 }
 
 export class PreReAssign extends Statement {
@@ -426,6 +508,12 @@ export class PreReAssign extends Statement {
     constructor (variableName: string) {
         super()
         this.variableName = variableName
+    }
+
+    public getTree(): object {
+        return {
+            'preReAssign': this.variableName
+        }
     }
 }
 
@@ -452,6 +540,12 @@ export class Assign extends Statement {
 
         return null;
     }
+
+    public getTree(): object {
+        return {
+            'assign': [this.variable.getTree(), this.expression.getTree()]
+        }
+    }
 }
 
 export class ReAssign extends Statement {
@@ -475,6 +569,12 @@ export class ReAssign extends Statement {
         env.freeRegister(resultRegister)
         return null;
     }
+
+    public getTree(): object {
+        return {
+            'reAssign': [{ 'variable': this.variableName }, this.expression.getTree()]
+        }
+    }
 }
 
 export class Block extends Statement {
@@ -488,6 +588,12 @@ export class Block extends Statement {
     public eval() {
         this.statement.eval()
         return null;
+    }
+
+    public getTree(): object {
+        return {
+            'block': this.statement.getTree()
+        }
     }
 }
 
@@ -514,6 +620,12 @@ export class If extends Statement {
         CodeBuffer.emit(`end${label}:\n`)
         return null
     }
+
+    public getTree(): object {
+        return {
+            'if': [this.expression.getTree(), this.block.getTree()]
+        }
+    }
 }
 
 export class PreIfElse extends Statement {
@@ -522,6 +634,12 @@ export class PreIfElse extends Statement {
     constructor (ifStatement: If) {
         super()
         this.ifStatement = ifStatement
+    }
+
+    public getTree(): object {
+        return {
+            'preIfElse': this.ifStatement.getTree()
+        }
     }
 }
 
@@ -553,6 +671,15 @@ export class IfElse extends Statement {
         CodeBuffer.emit(`end${label}:\n`)
         return null
     }
+
+    public getTree(): object {
+        return {
+            'ifElse': [
+                this.expression.getTree(), this.block.getTree(),
+                { 'else': this.elseBlock.getTree() }
+            ]
+        }
+    }
 }
 
 export class While extends Statement {
@@ -578,6 +705,12 @@ export class While extends Statement {
         CodeBuffer.emit(`end${label}:\n`)
         return null
     }
+
+    public getTree(): object {
+        return {
+            'while': [this.expression.getTree(), this.block.getTree()]
+        }
+    }
 }
 
 export class Break extends Statement {
@@ -587,6 +720,12 @@ export class Break extends Statement {
         CodeBuffer.emit(`jmp end${label}\n`)
         return null
     }
+
+    public getTree(): object {
+        return {
+            'break': ''
+        }
+    }
 }
 
 export class Continue extends Statement {
@@ -595,6 +734,12 @@ export class Continue extends Statement {
         CodeBuffer.comment(`--- Continue ---`)
         CodeBuffer.emit(`jmp ${label}\n`)
         return null
+    }
+
+    public getTree(): object {
+        return {
+            'continue': ''
+        }
     }
 }
 
@@ -613,6 +758,12 @@ export class Return extends Statement {
         env.freeRegister(resultRegister)
         CodeBuffer.emit(`jmp end${label}\n`)
         return null
+    }
+
+    public getTree(): object {
+        return {
+            'return': this.expression.getTree()
+        }
     }
 }
 
@@ -652,6 +803,12 @@ export class Function extends Statement {
         env = env.parent
         return null
     }
+
+    public getTree(): object {
+        return {
+            'function': [{ 'params': this.params }, this.block.getTree()]
+        }
+    }
 }
 
 export class CallFunction extends Statement {
@@ -683,6 +840,15 @@ export class CallFunction extends Statement {
         }
         f.eval()
         return EAX('int')
+    }
+
+    public getTree(): object {
+        return {
+            'callFunction': {
+                'name': this.name,
+                'args': this.params
+            }
+        }
     }
 }
 
@@ -722,6 +888,12 @@ export class Print extends Statement {
         }
         return null;
     }
+
+    public getTree(): object {
+        return {
+            'print': { 'args': this.params }
+        }
+    }
 }
 
 export class PrintString extends Statement {
@@ -736,5 +908,11 @@ export class PrintString extends Statement {
         let tempName = env.saveString(this.stringConstant)
         CodeBuffer.emit(`cinvoke printf, formatstr, ${tempName}\n`)
         return null;
+    }
+
+    public getTree(): object {
+        return {
+            'print': [this.stringConstant]
+        }
     }
 }

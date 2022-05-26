@@ -1,5 +1,6 @@
 export type Evalable = {
     eval(): MemoryBuffer
+    getTree(): object
 };
 
 export class FunctionParameter {
