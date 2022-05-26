@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 // исправить float / float - использовать остаток от деления
 // 
 
-const code = readFileSync('./code.apl', 'utf-8');
+const code = readFileSync(process.argv[2], 'utf-8');
 
 const lexer = new Lexer(code)
 
