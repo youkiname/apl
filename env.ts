@@ -98,14 +98,11 @@ export class Env {
     }
 
     public getVariable(name: string): Variable {
-        name = this.getNamePrefix() + name
-        if (name in this.variables) {
-            return this.variables[name]
-        }
-        let env = this.parent
+        let env: Env = this
         while (env !== null) {
-            if (name in env.variables) {
-                return env.variables[name]
+            let varName = env.getNamePrefix() + name
+            if (varName in env.variables) {
+                return env.variables[varName]
             }
             env = env.parent
         }
@@ -119,15 +116,11 @@ export class Env {
     }
 
     public getFunction(name: string): any {
-        name = this.getNamePrefix() + name
-
-        if (name in this.functions) {
-            return this.functions[name]
-        }
-        let env = this.parent
+        let env: Env = this
         while (env !== null) {
-            if (name in env.functions) {
-                return env.functions[name]
+            let funName = env.getNamePrefix() + name
+            if (funName in env.functions) {
+                return env.functions[funName]
             }
             env = env.parent
         }

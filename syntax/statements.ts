@@ -206,6 +206,9 @@ export class Term extends Statement {
             case "%": {
                 return this.processModulo(leftName, rightName)
             }
+            case "div": {
+                return this.processIntDivision(leftName, rightName)
+            }
         }
     }
 
@@ -230,16 +233,20 @@ export class Term extends Statement {
         if (leftName.type == 'int') {
             convertToFloat(leftName)
         }
-
-        CodeBuffer.mov(EAX('float'), leftName)
-        CodeBuffer.mov(EDX('int'), ZERO)
-        CodeBuffer.div(rightName)
-        env.freeRegister(leftName)
-        env.freeRegister(rightName)
+        this.processIntDivision(leftName, rightName)
         if (rightName.type == 'float') {
             CodeBuffer.imul(EAX('float'), new IntConstant(1000))
         }
         return EAX('float')
+    }
+
+    private processIntDivision(leftName: MemoryBuffer, rightName: MemoryBuffer) {
+        CodeBuffer.mov(EAX('int'), leftName)
+        CodeBuffer.mov(EDX('int'), ZERO)
+        CodeBuffer.div(rightName)
+        env.freeRegister(leftName)
+        env.freeRegister(rightName)
+        return EAX('int')
     }
 
     private processModulo(leftName: MemoryBuffer, rightName: MemoryBuffer) {
