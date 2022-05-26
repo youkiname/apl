@@ -17,7 +17,7 @@ export class TokenType {
 export const tokenTypesList = {
     "NEWLINE": new TokenType("NEWLINE", "\\n"),
     "SPACE": new TokenType("SPACE", "\\s", true),
-    "FLOAT_NUMBER": new TokenType("FLOAT_NUMBER", "([0-9]*[.])?[0-9]+"),
+    "FLOAT_NUMBER": new TokenType("FLOAT_NUMBER", "-*([0-9]*[.])?[0-9]+"),
     "NUMBER": new TokenType("NUMBER", "\\d+"),
     "COMMA": new TokenType("COMMA", ","),
     "DOT": new TokenType("DOT", "\\."),

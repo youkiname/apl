@@ -15,6 +15,16 @@ function parseFunctionParams(rawValue: string): FunctionParameter[] {
     return result
 }
 
+function convertToFloat(factor: MemoryBuffer) {
+    if (factor.type == 'float') {
+        return factor
+    }
+    CodeBuffer.comment('CONVERT TO FLOAT')
+    CodeBuffer.imul(factor, new IntConstant(1000))
+    factor.type = 'float'
+    return factor
+}
+
 let env = new Env()
 
 export class Statement {
@@ -86,11 +96,11 @@ export class FloatNumber extends Statement {
         const register = env.getFreeRegister('float')
         const exponent = this.factor.name.split('.')[0]
         let mantissa = this.factor.name.split('.')[1]
-        if (mantissa.length < 4) {
-            mantissa = mantissa + '0'.repeat(4 - mantissa.length)
+        if (mantissa.length < 3) {
+            mantissa = mantissa + '0'.repeat(3 - mantissa.length)
         }
-        if (mantissa.length > 4) {
-            mantissa = mantissa.substring(0, 4);
+        if (mantissa.length > 3) {
+            mantissa = mantissa.substring(0, 3);
         }
 
         CodeBuffer.mov(register, new IntConstant(parseInt(exponent + mantissa)))
@@ -158,7 +168,7 @@ export class Term extends Statement {
         }
 
         let leftName = this.left.eval()
-        const rightName = this.right.eval()
+        let rightName = this.right.eval()
 
         CodeBuffer.comment("---MULTIPLY---")
         if (this.sign == "*") {
@@ -169,13 +179,24 @@ export class Term extends Statement {
 
     private processMultiply(leftName: MemoryBuffer, rightName: MemoryBuffer) {
         CodeBuffer.imul(leftName, rightName)
+        if (leftName.type == "float" && rightName.type == "float") {
+            CodeBuffer.mov(EAX('float'), leftName)
+            CodeBuffer.mov(EDX('int'), ZERO)
+            CodeBuffer.mov(rightName, new IntConstant(1000))
+            CodeBuffer.div(rightName)
+            CodeBuffer.mov(leftName, EAX('float'))
+        }
+        if (leftName.type == 'float' || rightName.type == 'float') {
+            leftName.type == 'float'
+        }
+
         env.freeRegister(rightName)
         return leftName
     }
 
     private processDivision(leftName: MemoryBuffer, rightName: MemoryBuffer) {
         if (leftName.type == 'int') {
-            CodeBuffer.imul(leftName, new IntConstant(10000))
+            convertToFloat(leftName)
         }
 
         CodeBuffer.mov(EAX('float'), leftName)
@@ -183,9 +204,8 @@ export class Term extends Statement {
         CodeBuffer.div(rightName)
         env.freeRegister(leftName)
         env.freeRegister(rightName)
-        if (leftName.type == 'float' && rightName.type == 'float') {
-            CodeBuffer.imul(EAX('float'), new IntConstant(10000))
-
+        if (rightName.type == 'float') {
+            CodeBuffer.imul(EAX('float'), new IntConstant(1000))
         }
         return EAX('float')
     }
@@ -208,8 +228,12 @@ export class Add extends Statement {
             return this.left.eval()
         }
 
-        const leftName = this.left.eval()
-        const rightName = this.right.eval()
+        let leftName = this.left.eval()
+        let rightName = this.right.eval()
+        if (leftName.type == 'float' || rightName.type == 'float') {
+            convertToFloat(leftName)
+            convertToFloat(rightName)
+        }
 
         CodeBuffer.comment("---ADD---")
         if (this.sign == "-") {
@@ -630,7 +654,7 @@ export class Print extends Statement {
                     // CodeBuffer.emit(`cinvoke printf, formatfloat, [t2], [t1]\n`)
                     CodeBuffer.mov(EAX('float'), variable)
                     CodeBuffer.mov(EDX('int'), ZERO)
-                    CodeBuffer.mov(EBX('int'), new IntConstant(10000))
+                    CodeBuffer.mov(EBX('int'), new IntConstant(1000))
                     CodeBuffer.div(EBX('int'))
 
                     CodeBuffer.emit(`cinvoke printf, formatfloat, eax, edx\n`)

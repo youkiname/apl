@@ -16,7 +16,7 @@ export class FunctionParameter {
 export class MemoryBuffer {
     constructor (
         readonly name: string,
-        readonly type: string,
+        public type: string,
         readonly pointable = false,
     ) { }
 

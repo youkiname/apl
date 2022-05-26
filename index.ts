@@ -1,10 +1,20 @@
 import { Lexer } from "./lexer/lexer";
 import { Grammar } from "./syntax/grammar";
 import { Generator } from "./code-generator";
-
+// исправить float / float - использовать остаток от деления
+// 
 const code = `
-float a = 10.0001
-print(a)
+fun pow(a: int, b: int) {
+    int result = a
+    while (b > 0) {
+        result = result * a
+        b = b - 1
+    }
+    return result
+}
+
+int a = 5 % 2
+
 `
 
 const lexer = new Lexer(code)
