@@ -20,6 +20,11 @@ const lexer = new Lexer(code)
 const tokens = lexer.getTokens()
 const grammar = new Grammar(tokens)
 const ast = grammar.getAST()
-// saveTree(ast)
+saveTree(ast)
 ast.eval();
+
+// writeFile('env.json', JSON.stringify(ast.printEnv()), (err) => {
+//     if (err) throw err;
+//     console.log('Json Tree has been saved!');
+// });
 Translator.compile();

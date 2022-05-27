@@ -1,0 +1,1136 @@
+---
+stmt:
+  - stmt:
+      - stmt:
+          - stmt:
+              - stmt:
+                  - token:
+                      type:
+                        name: NEWLINE
+                        regex: {}
+                        skip: false
+                      value: "\n"
+              - stmt:
+                  - function:
+                      - params:
+                          - name: a
+                            type: int
+                          - name: b
+                            type: int
+                      - block:
+                          stmt:
+                            - stmt:
+                                - stmt:
+                                    - token:
+                                        type:
+                                          name: NEWLINE
+                                          regex: {}
+                                          skip: false
+                                        value: "\n"
+                                - stmt:
+                                    - while:
+                                        - expression:
+                                            term:
+                                              term:
+                                                factor:
+                                                  expression:
+                                                    and:
+                                                      - expression:
+                                                          compare:
+                                                            - expression:
+                                                                term:
+                                                                  term:
+                                                                    factor:
+                                                                      token:
+                                                                        type:
+                                                                          name: VARIABLE
+                                                                          regex:
+                                                                            {}
+                                                                          skip: false
+                                                                        value: a
+                                                            - "!="
+                                                            - expression:
+                                                                term:
+                                                                  term:
+                                                                    factor:
+                                                                      token:
+                                                                        type:
+                                                                          name: FLOAT_NUMBER
+                                                                          regex:
+                                                                            {}
+                                                                          skip: false
+                                                                        value: "0"
+                                                      - expression:
+                                                          compare:
+                                                            - expression:
+                                                                term:
+                                                                  term:
+                                                                    factor:
+                                                                      token:
+                                                                        type:
+                                                                          name: VARIABLE
+                                                                          regex:
+                                                                            {}
+                                                                          skip: false
+                                                                        value: b
+                                                            - "!="
+                                                            - expression:
+                                                                term:
+                                                                  term:
+                                                                    factor:
+                                                                      token:
+                                                                        type:
+                                                                          name: FLOAT_NUMBER
+                                                                          regex:
+                                                                            {}
+                                                                          skip: false
+                                                                        value: "0"
+                                        - block:
+                                            stmt:
+                                              - stmt:
+                                                  - stmt:
+                                                      - token:
+                                                          type:
+                                                            name: NEWLINE
+                                                            regex: {}
+                                                            skip: false
+                                                          value: "\n"
+                                                  - stmt:
+                                                      - ifElse:
+                                                          - expression:
+                                                              term:
+                                                                term:
+                                                                  factor:
+                                                                    expression:
+                                                                      compare:
+                                                                        - ? expression
+                                                                          : ? term
+                                                                            : ? term
+                                                                              : ? factor
+                                                                                : ? token
+                                                                                  : ? type
+                                                                                    : name: VARIABLE
+                                                                                      ? regex
+                                                                                      : {
+                                                                                          ,
+                                                                                        }
+                                                                                      skip: false
+                                                                                    value: a
+                                                                        - ">"
+                                                                        - ? expression
+                                                                          : ? term
+                                                                            : ? term
+                                                                              : ? factor
+                                                                                : ? token
+                                                                                  : ? type
+                                                                                    : name: VARIABLE
+                                                                                      ? regex
+                                                                                      : {
+                                                                                          ,
+                                                                                        }
+                                                                                      skip: false
+                                                                                    value: b
+                                                          - block:
+                                                              stmt:
+                                                                - stmt:
+                                                                    - token:
+                                                                        type:
+                                                                          name: NEWLINE
+                                                                          regex:
+                                                                            {}
+                                                                          skip: false
+                                                                        value: "\n"
+                                                                - stmt:
+                                                                    - reAssign:
+                                                                        - variable: a
+                                                                        - ? expression
+                                                                          : ? term
+                                                                            : ? term
+                                                                              : - ? term
+                                                                                  : ? factor
+                                                                                    : ? token
+                                                                                      : ? type
+                                                                                        : name: VARIABLE
+                                                                                          ? regex
+                                                                                          : {
+                                                                                              ,
+                                                                                            }
+                                                                                          skip: false
+                                                                                        value: a
+                                                                                - "%"
+                                                                                - ? term
+                                                                                  : ? factor
+                                                                                    : ? token
+                                                                                      : ? type
+                                                                                        : name: VARIABLE
+                                                                                          ? regex
+                                                                                          : {
+                                                                                              ,
+                                                                                            }
+                                                                                          skip: false
+                                                                                        value: b
+                                                          - else:
+                                                              block:
+                                                                stmt:
+                                                                  - stmt:
+                                                                      - token:
+                                                                          type:
+                                                                            name: NEWLINE
+                                                                            ? regex
+                                                                            : {}
+                                                                            skip: false
+                                                                          value: "\n"
+                                                                  - stmt:
+                                                                      - ? reAssign
+                                                                        : - variable: b
+                                                                          - ? expression
+                                                                            : ? term
+                                                                              : ? term
+                                                                                : - ? term
+                                                                                    : ? factor
+                                                                                      : ? token
+                                                                                        : ? type
+                                                                                          : name: VARIABLE
+                                                                                            ? regex
+                                                                                            : {
+                                                                                                ,
+                                                                                              }
+                                                                                            skip: false
+                                                                                          value: b
+                                                                                  - "%"
+                                                                                  - ? term
+                                                                                    : ? factor
+                                                                                      : ? token
+                                                                                        : ? type
+                                                                                          : name: VARIABLE
+                                                                                            ? regex
+                                                                                            : {
+                                                                                                ,
+                                                                                              }
+                                                                                            skip: false
+                                                                                          value: a
+                                              - stmt:
+                                                  - token:
+                                                      type:
+                                                        name: NEWLINE
+                                                        regex: {}
+                                                        skip: false
+                                                      value: "\n"
+                            - stmt:
+                                - stmt:
+                                    - token:
+                                        type:
+                                          name: NEWLINE
+                                          regex: {}
+                                          skip: false
+                                        value: "\n"
+                                - stmt:
+                                    - return:
+                                        expression:
+                                          add:
+                                            - expression:
+                                                term:
+                                                  term:
+                                                    factor:
+                                                      token:
+                                                        type:
+                                                          name: VARIABLE
+                                                          regex: {}
+                                                          skip: false
+                                                        value: a
+                                            - "+"
+                                            - expression:
+                                                term:
+                                                  term:
+                                                    factor:
+                                                      token:
+                                                        type:
+                                                          name: VARIABLE
+                                                          regex: {}
+                                                          skip: false
+                                                        value: b
+          - stmt:
+              - stmt:
+                  - token:
+                      type:
+                        name: NEWLINE
+                        regex: {}
+                        skip: false
+                      value: "\n"
+              - stmt:
+                  - token:
+                      type:
+                        name: NEWLINE
+                        regex: {}
+                        skip: false
+                      value: "\n"
+      - stmt:
+          - function:
+              - params:
+                  - name: n
+                    type: int
+              - block:
+                  stmt:
+                    - stmt:
+                        - stmt:
+                            - stmt:
+                                - token:
+                                    type:
+                                      name: NEWLINE
+                                      regex: {}
+                                      skip: false
+                                    value: "\n"
+                            - stmt:
+                                - assign:
+                                    - type: int
+                                      name: d
+                                    - expression:
+                                        term:
+                                          term:
+                                            factor:
+                                              token:
+                                                type:
+                                                  name: FLOAT_NUMBER
+                                                  regex: {}
+                                                  skip: false
+                                                value: "2"
+                        - stmt:
+                            - while:
+                                - expression:
+                                    term:
+                                      term:
+                                        factor:
+                                          expression:
+                                            compare:
+                                              - expression:
+                                                  term:
+                                                    term:
+                                                      - term:
+                                                          factor:
+                                                            token:
+                                                              type:
+                                                                name: VARIABLE
+                                                                regex: {}
+                                                                skip: false
+                                                              value: d
+                                                      - "*"
+                                                      - term:
+                                                          factor:
+                                                            token:
+                                                              type:
+                                                                name: VARIABLE
+                                                                regex: {}
+                                                                skip: false
+                                                              value: d
+                                              - "<="
+                                              - expression:
+                                                  term:
+                                                    term:
+                                                      factor:
+                                                        token:
+                                                          type:
+                                                            name: VARIABLE
+                                                            regex: {}
+                                                            skip: false
+                                                          value: n
+                                - block:
+                                    stmt:
+                                      - stmt:
+                                          - stmt:
+                                              - token:
+                                                  type:
+                                                    name: NEWLINE
+                                                    regex: {}
+                                                    skip: false
+                                                  value: "\n"
+                                          - stmt:
+                                              - ifElse:
+                                                  - expression:
+                                                      term:
+                                                        term:
+                                                          factor:
+                                                            expression:
+                                                              compare:
+                                                                - expression:
+                                                                    term:
+                                                                      term:
+                                                                        - term:
+                                                                            ? factor
+                                                                            : ? token
+                                                                              : ? type
+                                                                                : name: VARIABLE
+                                                                                  ? regex
+                                                                                  : {
+                                                                                      ,
+                                                                                    }
+                                                                                  skip: false
+                                                                                value: n
+                                                                        - "%"
+                                                                        - term:
+                                                                            ? factor
+                                                                            : ? token
+                                                                              : ? type
+                                                                                : name: VARIABLE
+                                                                                  ? regex
+                                                                                  : {
+                                                                                      ,
+                                                                                    }
+                                                                                  skip: false
+                                                                                value: d
+                                                                - "=="
+                                                                - expression:
+                                                                    term:
+                                                                      term:
+                                                                        factor:
+                                                                          token:
+                                                                            ? type
+                                                                            : name: FLOAT_NUMBER
+                                                                              ? regex
+                                                                              : {
+                                                                                  ,
+                                                                                }
+                                                                              skip: false
+                                                                            value: "0"
+                                                  - block:
+                                                      stmt:
+                                                        - stmt:
+                                                            - token:
+                                                                type:
+                                                                  name: NEWLINE
+                                                                  regex: {}
+                                                                  skip: false
+                                                                value: "\n"
+                                                        - stmt:
+                                                            - stmt:
+                                                                - print:
+                                                                    args:
+                                                                      - d
+                                                            - stmt:
+                                                                - reAssign:
+                                                                    - variable: n
+                                                                    - ? expression
+                                                                      : term:
+                                                                          term:
+                                                                            - ? term
+                                                                              : ? factor
+                                                                                : ? token
+                                                                                  : ? type
+                                                                                    : name: VARIABLE
+                                                                                      ? regex
+                                                                                      : {
+                                                                                          ,
+                                                                                        }
+                                                                                      skip: false
+                                                                                    value: n
+                                                                            - div
+                                                                            - ? term
+                                                                              : ? factor
+                                                                                : ? token
+                                                                                  : ? type
+                                                                                    : name: VARIABLE
+                                                                                      ? regex
+                                                                                      : {
+                                                                                          ,
+                                                                                        }
+                                                                                      skip: false
+                                                                                    value: d
+                                                  - else:
+                                                      block:
+                                                        stmt:
+                                                          - stmt:
+                                                              - token:
+                                                                  type:
+                                                                    name: NEWLINE
+                                                                    regex: {}
+                                                                    skip: false
+                                                                  value: "\n"
+                                                          - stmt:
+                                                              - reAssign:
+                                                                  - variable: d
+                                                                  - expression:
+                                                                      add:
+                                                                        - ? expression
+                                                                          : ? term
+                                                                            : ? term
+                                                                              : ? factor
+                                                                                : ? token
+                                                                                  : ? type
+                                                                                    : name: VARIABLE
+                                                                                      ? regex
+                                                                                      : {
+                                                                                          ,
+                                                                                        }
+                                                                                      skip: false
+                                                                                    value: d
+                                                                        - "+"
+                                                                        - ? expression
+                                                                          : ? term
+                                                                            : ? term
+                                                                              : ? factor
+                                                                                : ? token
+                                                                                  : ? type
+                                                                                    : name: FLOAT_NUMBER
+                                                                                      ? regex
+                                                                                      : {
+                                                                                          ,
+                                                                                        }
+                                                                                      skip: false
+                                                                                    value: "1"
+                                      - stmt:
+                                          - token:
+                                              type:
+                                                name: NEWLINE
+                                                regex: {}
+                                                skip: false
+                                              value: "\n"
+                    - stmt:
+                        - stmt:
+                            - stmt:
+                                - token:
+                                    type:
+                                      name: NEWLINE
+                                      regex: {}
+                                      skip: false
+                                    value: "\n"
+                            - stmt:
+                                - if:
+                                    - expression:
+                                        term:
+                                          term:
+                                            factor:
+                                              expression:
+                                                compare:
+                                                  - expression:
+                                                      term:
+                                                        term:
+                                                          factor:
+                                                            token:
+                                                              type:
+                                                                name: VARIABLE
+                                                                regex: {}
+                                                                skip: false
+                                                              value: n
+                                                  - ">"
+                                                  - expression:
+                                                      term:
+                                                        term:
+                                                          factor:
+                                                            token:
+                                                              type:
+                                                                name: FLOAT_NUMBER
+                                                                regex: {}
+                                                                skip: false
+                                                              value: "1"
+                                    - block:
+                                        stmt:
+                                          - stmt:
+                                              - token:
+                                                  type:
+                                                    name: NEWLINE
+                                                    regex: {}
+                                                    skip: false
+                                                  value: "\n"
+                                          - stmt:
+                                              - print:
+                                                  args:
+                                                    - n
+                        - stmt:
+                            - token:
+                                type:
+                                  name: NEWLINE
+                                  regex: {}
+                                  skip: false
+                                value: "\n"
+  - stmt:
+      - stmt:
+          - stmt:
+              - stmt:
+                  - token:
+                      type:
+                        name: NEWLINE
+                        regex: {}
+                        skip: false
+                      value: "\n"
+              - stmt:
+                  - token:
+                      type:
+                        name: NEWLINE
+                        regex: {}
+                        skip: false
+                      value: "\n"
+          - stmt:
+              - function:
+                  - params:
+                      - name: n
+                        type: int
+                  - block:
+                      stmt:
+                        - stmt:
+                            - stmt:
+                                - stmt:
+                                    - token:
+                                        type:
+                                          name: NEWLINE
+                                          regex: {}
+                                          skip: false
+                                        value: "\n"
+                                - stmt:
+                                    - stmt:
+                                        - stmt:
+                                            - assign:
+                                                - type: int
+                                                  name: prev
+                                                - expression:
+                                                    term:
+                                                      term:
+                                                        factor:
+                                                          token:
+                                                            type:
+                                                              name: FLOAT_NUMBER
+                                                              regex: {}
+                                                              skip: false
+                                                            value: "1"
+                                        - stmt:
+                                            - assign:
+                                                - type: int
+                                                  name: current
+                                                - expression:
+                                                    term:
+                                                      term:
+                                                        factor:
+                                                          token:
+                                                            type:
+                                                              name: FLOAT_NUMBER
+                                                              regex: {}
+                                                              skip: false
+                                                            value: "1"
+                                    - stmt:
+                                        - assign:
+                                            - type: int
+                                              name: temp
+                                            - expression:
+                                                term:
+                                                  term:
+                                                    factor:
+                                                      token:
+                                                        type:
+                                                          name: FLOAT_NUMBER
+                                                          regex: {}
+                                                          skip: false
+                                                        value: "0"
+                            - stmt:
+                                - while:
+                                    - expression:
+                                        term:
+                                          term:
+                                            factor:
+                                              expression:
+                                                compare:
+                                                  - expression:
+                                                      term:
+                                                        term:
+                                                          factor:
+                                                            token:
+                                                              type:
+                                                                name: VARIABLE
+                                                                regex: {}
+                                                                skip: false
+                                                              value: n
+                                                  - ">"
+                                                  - expression:
+                                                      term:
+                                                        term:
+                                                          factor:
+                                                            token:
+                                                              type:
+                                                                name: FLOAT_NUMBER
+                                                                regex: {}
+                                                                skip: false
+                                                              value: "0"
+                                    - block:
+                                        stmt:
+                                          - stmt:
+                                              - token:
+                                                  type:
+                                                    name: NEWLINE
+                                                    regex: {}
+                                                    skip: false
+                                                  value: "\n"
+                                          - stmt:
+                                              - stmt:
+                                                  - stmt:
+                                                      - stmt:
+                                                          - reAssign:
+                                                              - variable: temp
+                                                              - expression:
+                                                                  add:
+                                                                    - ? expression
+                                                                      : term:
+                                                                          term:
+                                                                            ? factor
+                                                                            : ? token
+                                                                              : ? type
+                                                                                : name: VARIABLE
+                                                                                  ? regex
+                                                                                  : {
+                                                                                      ,
+                                                                                    }
+                                                                                  skip: false
+                                                                                value: prev
+                                                                    - "+"
+                                                                    - ? expression
+                                                                      : term:
+                                                                          term:
+                                                                            ? factor
+                                                                            : ? token
+                                                                              : ? type
+                                                                                : name: VARIABLE
+                                                                                  ? regex
+                                                                                  : {
+                                                                                      ,
+                                                                                    }
+                                                                                  skip: false
+                                                                                value: current
+                                                      - stmt:
+                                                          - reAssign:
+                                                              - variable: prev
+                                                              - expression:
+                                                                  term:
+                                                                    term:
+                                                                      factor:
+                                                                        token:
+                                                                          type:
+                                                                            name: VARIABLE
+                                                                            ? regex
+                                                                            : {}
+                                                                            skip: false
+                                                                          value: current
+                                                  - stmt:
+                                                      - reAssign:
+                                                          - variable: current
+                                                          - expression:
+                                                              term:
+                                                                term:
+                                                                  factor:
+                                                                    token:
+                                                                      type:
+                                                                        name: VARIABLE
+                                                                        regex:
+                                                                          {}
+                                                                        skip: false
+                                                                      value: temp
+                                              - stmt:
+                                                  - reAssign:
+                                                      - variable: n
+                                                      - expression:
+                                                          add:
+                                                            - expression:
+                                                                term:
+                                                                  term:
+                                                                    factor:
+                                                                      token:
+                                                                        type:
+                                                                          name: VARIABLE
+                                                                          regex:
+                                                                            {}
+                                                                          skip: false
+                                                                        value: n
+                                                            - "-"
+                                                            - expression:
+                                                                term:
+                                                                  term:
+                                                                    factor:
+                                                                      token:
+                                                                        type:
+                                                                          name: FLOAT_NUMBER
+                                                                          regex:
+                                                                            {}
+                                                                          skip: false
+                                                                        value: "1"
+                        - stmt:
+                            - stmt:
+                                - token:
+                                    type:
+                                      name: NEWLINE
+                                      regex: {}
+                                      skip: false
+                                    value: "\n"
+                            - stmt:
+                                - return:
+                                    expression:
+                                      term:
+                                        term:
+                                          factor:
+                                            token:
+                                              type:
+                                                name: VARIABLE
+                                                regex: {}
+                                                skip: false
+                                              value: current
+      - stmt:
+          - stmt:
+              - stmt:
+                  - stmt:
+                      - token:
+                          type:
+                            name: NEWLINE
+                            regex: {}
+                            skip: false
+                          value: "\n"
+                  - stmt:
+                      - token:
+                          type:
+                            name: NEWLINE
+                            regex: {}
+                            skip: false
+                          value: "\n"
+              - stmt:
+                  - function:
+                      - params:
+                          - name: x
+                            type: int
+                      - block:
+                          stmt:
+                            - stmt:
+                                - token:
+                                    type:
+                                      name: NEWLINE
+                                      regex: {}
+                                      skip: false
+                                    value: "\n"
+                            - stmt:
+                                - stmt:
+                                    - stmt:
+                                        - assign:
+                                            - type: int
+                                              name: a
+                                            - expression:
+                                                term:
+                                                  term:
+                                                    - expression:
+                                                        term:
+                                                          term:
+                                                            - term:
+                                                                factor:
+                                                                  token:
+                                                                    type:
+                                                                      name: FLOAT_NUMBER
+                                                                      regex: {}
+                                                                      skip: false
+                                                                    value: "4"
+                                                            - "*"
+                                                            - term:
+                                                                factor:
+                                                                  token:
+                                                                    type:
+                                                                      name: VARIABLE
+                                                                      regex: {}
+                                                                      skip: false
+                                                                    value: x
+                                                    - "*"
+                                                    - expression:
+                                                        term:
+                                                          term:
+                                                            factor:
+                                                              expression:
+                                                                add:
+                                                                  - expression:
+                                                                      term:
+                                                                        term:
+                                                                          ? factor
+                                                                          : ? token
+                                                                            : ? type
+                                                                              : name: FLOAT_NUMBER
+                                                                                ? regex
+                                                                                : {
+                                                                                    ,
+                                                                                  }
+                                                                                skip: false
+                                                                              value: "180"
+                                                                  - "-"
+                                                                  - expression:
+                                                                      term:
+                                                                        term:
+                                                                          ? factor
+                                                                          : ? token
+                                                                            : ? type
+                                                                              : name: VARIABLE
+                                                                                ? regex
+                                                                                : {
+                                                                                    ,
+                                                                                  }
+                                                                                skip: false
+                                                                              value: x
+                                    - stmt:
+                                        - assign:
+                                            - type: int
+                                              name: b
+                                            - expression:
+                                                term:
+                                                  term:
+                                                    - expression:
+                                                        add:
+                                                          - expression:
+                                                              term:
+                                                                term:
+                                                                  factor:
+                                                                    token:
+                                                                      type:
+                                                                        name: FLOAT_NUMBER
+                                                                        regex:
+                                                                          {}
+                                                                        skip: false
+                                                                      value: "40500"
+                                                          - "-"
+                                                          - expression:
+                                                              term:
+                                                                term:
+                                                                  factor:
+                                                                    token:
+                                                                      type:
+                                                                        name: VARIABLE
+                                                                        regex:
+                                                                          {}
+                                                                        skip: false
+                                                                      value: x
+                                                    - "*"
+                                                    - expression:
+                                                        term:
+                                                          term:
+                                                            factor:
+                                                              expression:
+                                                                add:
+                                                                  - expression:
+                                                                      term:
+                                                                        term:
+                                                                          ? factor
+                                                                          : ? token
+                                                                            : ? type
+                                                                              : name: FLOAT_NUMBER
+                                                                                ? regex
+                                                                                : {
+                                                                                    ,
+                                                                                  }
+                                                                                skip: false
+                                                                              value: "180"
+                                                                  - "-"
+                                                                  - expression:
+                                                                      term:
+                                                                        term:
+                                                                          ? factor
+                                                                          : ? token
+                                                                            : ? type
+                                                                              : name: VARIABLE
+                                                                                ? regex
+                                                                                : {
+                                                                                    ,
+                                                                                  }
+                                                                                skip: false
+                                                                              value: x
+                                - stmt:
+                                    - return:
+                                        expression:
+                                          term:
+                                            term:
+                                              - term:
+                                                  factor:
+                                                    token:
+                                                      type:
+                                                        name: VARIABLE
+                                                        regex: {}
+                                                        skip: false
+                                                      value: a
+                                              - "/"
+                                              - term:
+                                                  factor:
+                                                    token:
+                                                      type:
+                                                        name: VARIABLE
+                                                        regex: {}
+                                                        skip: false
+                                                      value: b
+          - stmt:
+              - stmt:
+                  - stmt:
+                      - stmt:
+                          - stmt:
+                              - stmt:
+                                  - stmt:
+                                      - stmt:
+                                          - stmt:
+                                              - stmt:
+                                                  - stmt:
+                                                      - stmt:
+                                                          - token:
+                                                              type:
+                                                                name: NEWLINE
+                                                                regex: {}
+                                                                skip: false
+                                                              value: "\n"
+                                                      - stmt:
+                                                          - token:
+                                                              type:
+                                                                name: NEWLINE
+                                                                regex: {}
+                                                                skip: false
+                                                              value: "\n"
+                                                  - stmt:
+                                                      - token:
+                                                          type:
+                                                            name: NEWLINE
+                                                            regex: {}
+                                                            skip: false
+                                                          value: "\n"
+                                              - stmt:
+                                                  - stmt:
+                                                      - assign:
+                                                          - type: int
+                                                            name: a
+                                                          - expression:
+                                                              term:
+                                                                term:
+                                                                  factor:
+                                                                    token:
+                                                                      type:
+                                                                        name: FLOAT_NUMBER
+                                                                        regex:
+                                                                          {}
+                                                                        skip: false
+                                                                      value: "1442"
+                                                  - stmt:
+                                                      - assign:
+                                                          - type: int
+                                                            name: b
+                                                          - expression:
+                                                              term:
+                                                                term:
+                                                                  factor:
+                                                                    token:
+                                                                      type:
+                                                                        name: FLOAT_NUMBER
+                                                                        regex:
+                                                                          {}
+                                                                        skip: false
+                                                                      value: "13"
+                                          - stmt:
+                                              - token:
+                                                  type:
+                                                    name: NEWLINE
+                                                    regex: {}
+                                                    skip: false
+                                                  value: "\n"
+                                      - stmt:
+                                          - stmt:
+                                              - stmt:
+                                                  - print:
+                                                      - "'Euclidean 1442, 13'"
+                                              - stmt:
+                                                  - assign:
+                                                      - type: int
+                                                        name: result
+                                                      - expression:
+                                                          term:
+                                                            term:
+                                                              callFunction:
+                                                                name: euclidean
+                                                                args:
+                                                                  - a
+                                                                  - b
+                                          - stmt:
+                                              - print:
+                                                  args:
+                                                    - result
+                                  - stmt:
+                                      - token:
+                                          type:
+                                            name: NEWLINE
+                                            regex: {}
+                                            skip: false
+                                          value: "\n"
+                              - stmt:
+                                  - stmt:
+                                      - stmt:
+                                          - print:
+                                              - "'Factorization 1442'"
+                                      - stmt:
+                                          - reAssign:
+                                              - variable: result
+                                              - expression:
+                                                  term:
+                                                    term:
+                                                      callFunction:
+                                                        name: factor
+                                                        args:
+                                                          - a
+                                  - stmt:
+                                      - print:
+                                          args:
+                                            - result
+                          - stmt:
+                              - token:
+                                  type:
+                                    name: NEWLINE
+                                    regex: {}
+                                    skip: false
+                                  value: "\n"
+                      - stmt:
+                          - stmt:
+                              - stmt:
+                                  - print:
+                                      - "'Fibonacci 13'"
+                              - stmt:
+                                  - reAssign:
+                                      - variable: result
+                                      - expression:
+                                          term:
+                                            term:
+                                              callFunction:
+                                                name: fibonacci
+                                                args:
+                                                  - b
+                          - stmt:
+                              - print:
+                                  args:
+                                    - result
+                  - stmt:
+                      - token:
+                          type:
+                            name: NEWLINE
+                            regex: {}
+                            skip: false
+                          value: "\n"
+              - stmt:
+                  - stmt:
+                      - stmt:
+                          - stmt:
+                              - print:
+                                  - "'Sin 179'"
+                          - stmt:
+                              - assign:
+                                  - type: int
+                                    name: c
+                                  - expression:
+                                      term:
+                                        term:
+                                          factor:
+                                            token:
+                                              type:
+                                                name: FLOAT_NUMBER
+                                                regex: {}
+                                                skip: false
+                                              value: "179"
+                      - stmt:
+                          - assign:
+                              - type: float
+                                name: result2
+                              - expression:
+                                  term:
+                                    term:
+                                      callFunction:
+                                        name: sin
+                                        args:
+                                          - c
+                  - stmt:
+                      - print:
+                          args:
+                            - result2

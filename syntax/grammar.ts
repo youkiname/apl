@@ -26,7 +26,8 @@ export class Grammar {
                 ruleIndex += 1
             }
             this.startIndex = 0
-            if (this.statements.length == 1 && this.statements[0].toString() == 'Statement') {
+            if (this.statements.length == 1 &&
+                this.statements[0].toString() == 'Statement') {
                 break
             }
         }

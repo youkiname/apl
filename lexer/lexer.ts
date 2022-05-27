@@ -93,7 +93,7 @@ export class Token {
     public getTree(): object {
         return {
             'token': {
-                'type': this.type.name,
+                'type': this.type,
                 'value': this.value
             }
         }

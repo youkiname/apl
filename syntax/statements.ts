@@ -69,10 +69,13 @@ export class Statement {
     }
 
     public getTree(): object {
-
         return {
             "stmt": this.args.map(arg => arg.getTree())
         }
+    }
+
+    public printEnv() {
+        return env.getTree()
     }
 }
 
@@ -210,11 +213,11 @@ export class Factor extends Statement {
 }
 
 export class Term extends Statement {
-    private left: Statement
-    private right: Statement | null
+    private left: Evalable
+    private right: Evalable | null
     private sign: string | null
 
-    constructor (left: Statement, sign: string | null, right: Statement | null) {
+    constructor (left: Evalable, sign: string | null, right: Evalable | null) {
         super()
         this.left = left
         this.sign = sign
@@ -793,10 +796,12 @@ export class Function extends Statement {
 
         for (let param of this.params) {
             let variable = env.addVariable(param.convert())
+
             const register = env.getFreeRegister(variable.type)
             CodeBuffer.pop(register)
             CodeBuffer.mov(variable, register)
             env.freeRegister(register)
+
         }
         const label = env.newLabel('fun')
         CodeBuffer.emit(`${label}:\n`)
@@ -875,12 +880,13 @@ export class Print extends Statement {
             }
             switch (variable.type) {
                 case "float": {
+
                     CodeBuffer.mov(EAX('float'), variable)
                     CodeBuffer.mov(EDX('int'), ZERO)
                     CodeBuffer.mov(EBX('int'), new IntConstant(1000))
                     CodeBuffer.div(EBX('int'))
-
                     CodeBuffer.emit(`cinvoke printf, formatfloat, eax, edx\n`)
+
                     break;
                 }
                 default: { // int

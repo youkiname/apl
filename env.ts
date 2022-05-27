@@ -134,7 +134,7 @@ export class Env {
     }
 
     public getOrCreate(envName: string): Env {
-        return new Env(envName, this)
+        // return new Env(envName, this)
         if (this.children[envName]) {
             return this.children[envName]
         }
@@ -148,5 +148,17 @@ export class Env {
             return '';
         }
         return this.parent.getNamePrefix() + this.name + "__";
+    }
+
+    public getTree() {
+        let result = {}
+
+        for (const [key, variable] of Object.entries(this.variables)) {
+            result[key] = variable
+        }
+        for (const [key, child] of Object.entries(this.children)) {
+            result[key] = child.getTree()
+        }
+        return result
     }
 }
