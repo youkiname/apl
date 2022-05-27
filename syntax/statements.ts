@@ -280,10 +280,13 @@ export class Term extends Statement {
         if (leftName.type == 'int') {
             convertToFloat(leftName)
         }
-        this.processIntDivision(leftName, rightName)
         if (rightName.type == 'float') {
-            CodeBuffer.imul(EAX('float'), new IntConstant(1000))
+            CodeBuffer.imul(leftName, new IntConstant(1000))
         }
+        this.processIntDivision(leftName, rightName)
+        // if (rightName.type == 'float') {
+        //     CodeBuffer.imul(EAX('float'), new IntConstant(1000))
+        // }
         return EAX('float')
     }
 

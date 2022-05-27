@@ -9,389 +9,49 @@
                 {
                   "stmt": [
                     {
-                      "token": {
-                        "type": "NEWLINE",
-                        "value": "\n"
-                      }
+                      "assign": [
+                        {
+                          "type": "int",
+                          "name": "a"
+                        },
+                        {
+                          "expression": {
+                            "term": {
+                              "term": {
+                                "factor": {
+                                  "token": {
+                                    "type": "FLOAT_NUMBER",
+                                    "value": "50"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
                     }
                   ]
                 },
                 {
                   "stmt": [
                     {
-                      "function": [
+                      "assign": [
                         {
-                          "params": [
-                            {
-                              "name": "a",
-                              "type": "int"
-                            },
-                            {
-                              "name": "b",
-                              "type": "int"
-                            }
-                          ]
+                          "type": "int",
+                          "name": "b"
                         },
                         {
-                          "block": {
-                            "stmt": [
-                              {
-                                "stmt": [
-                                  {
-                                    "stmt": [
-                                      {
-                                        "token": {
-                                          "type": "NEWLINE",
-                                          "value": "\n"
-                                        }
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "stmt": [
-                                      {
-                                        "while": [
-                                          {
-                                            "expression": {
-                                              "term": {
-                                                "term": {
-                                                  "factor": {
-                                                    "expression": {
-                                                      "and": [
-                                                        {
-                                                          "expression": {
-                                                            "compare": [
-                                                              {
-                                                                "expression": {
-                                                                  "term": {
-                                                                    "term": {
-                                                                      "factor": {
-                                                                        "token": {
-                                                                          "type": "VARIABLE",
-                                                                          "value": "a"
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              },
-                                                              "!=",
-                                                              {
-                                                                "expression": {
-                                                                  "term": {
-                                                                    "term": {
-                                                                      "factor": {
-                                                                        "token": {
-                                                                          "type": "FLOAT_NUMBER",
-                                                                          "value": "0"
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              }
-                                                            ]
-                                                          }
-                                                        },
-                                                        {
-                                                          "expression": {
-                                                            "compare": [
-                                                              {
-                                                                "expression": {
-                                                                  "term": {
-                                                                    "term": {
-                                                                      "factor": {
-                                                                        "token": {
-                                                                          "type": "VARIABLE",
-                                                                          "value": "b"
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              },
-                                                              "!=",
-                                                              {
-                                                                "expression": {
-                                                                  "term": {
-                                                                    "term": {
-                                                                      "factor": {
-                                                                        "token": {
-                                                                          "type": "FLOAT_NUMBER",
-                                                                          "value": "0"
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              }
-                                                            ]
-                                                          }
-                                                        }
-                                                      ]
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          },
-                                          {
-                                            "block": {
-                                              "stmt": [
-                                                {
-                                                  "stmt": [
-                                                    {
-                                                      "stmt": [
-                                                        {
-                                                          "token": {
-                                                            "type": "NEWLINE",
-                                                            "value": "\n"
-                                                          }
-                                                        }
-                                                      ]
-                                                    },
-                                                    {
-                                                      "stmt": [
-                                                        {
-                                                          "ifElse": [
-                                                            {
-                                                              "expression": {
-                                                                "term": {
-                                                                  "term": {
-                                                                    "factor": {
-                                                                      "expression": {
-                                                                        "compare": [
-                                                                          {
-                                                                            "expression": {
-                                                                              "term": {
-                                                                                "term": {
-                                                                                  "factor": {
-                                                                                    "token": {
-                                                                                      "type": "VARIABLE",
-                                                                                      "value": "a"
-                                                                                    }
-                                                                                  }
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          },
-                                                                          ">",
-                                                                          {
-                                                                            "expression": {
-                                                                              "term": {
-                                                                                "term": {
-                                                                                  "factor": {
-                                                                                    "token": {
-                                                                                      "type": "VARIABLE",
-                                                                                      "value": "b"
-                                                                                    }
-                                                                                  }
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          }
-                                                                        ]
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              }
-                                                            },
-                                                            {
-                                                              "block": {
-                                                                "stmt": [
-                                                                  {
-                                                                    "stmt": [
-                                                                      {
-                                                                        "token": {
-                                                                          "type": "NEWLINE",
-                                                                          "value": "\n"
-                                                                        }
-                                                                      }
-                                                                    ]
-                                                                  },
-                                                                  {
-                                                                    "stmt": [
-                                                                      {
-                                                                        "reAssign": [
-                                                                          {
-                                                                            "variable": "a"
-                                                                          },
-                                                                          {
-                                                                            "expression": {
-                                                                              "term": {
-                                                                                "term": [
-                                                                                  {
-                                                                                    "term": {
-                                                                                      "factor": {
-                                                                                        "token": {
-                                                                                          "type": "VARIABLE",
-                                                                                          "value": "a"
-                                                                                        }
-                                                                                      }
-                                                                                    }
-                                                                                  },
-                                                                                  "%",
-                                                                                  {
-                                                                                    "term": {
-                                                                                      "factor": {
-                                                                                        "token": {
-                                                                                          "type": "VARIABLE",
-                                                                                          "value": "b"
-                                                                                        }
-                                                                                      }
-                                                                                    }
-                                                                                  }
-                                                                                ]
-                                                                              }
-                                                                            }
-                                                                          }
-                                                                        ]
-                                                                      }
-                                                                    ]
-                                                                  }
-                                                                ]
-                                                              }
-                                                            },
-                                                            {
-                                                              "else": {
-                                                                "block": {
-                                                                  "stmt": [
-                                                                    {
-                                                                      "stmt": [
-                                                                        {
-                                                                          "token": {
-                                                                            "type": "NEWLINE",
-                                                                            "value": "\n"
-                                                                          }
-                                                                        }
-                                                                      ]
-                                                                    },
-                                                                    {
-                                                                      "stmt": [
-                                                                        {
-                                                                          "reAssign": [
-                                                                            {
-                                                                              "variable": "b"
-                                                                            },
-                                                                            {
-                                                                              "expression": {
-                                                                                "term": {
-                                                                                  "term": [
-                                                                                    {
-                                                                                      "term": {
-                                                                                        "factor": {
-                                                                                          "token": {
-                                                                                            "type": "VARIABLE",
-                                                                                            "value": "b"
-                                                                                          }
-                                                                                        }
-                                                                                      }
-                                                                                    },
-                                                                                    "%",
-                                                                                    {
-                                                                                      "term": {
-                                                                                        "factor": {
-                                                                                          "token": {
-                                                                                            "type": "VARIABLE",
-                                                                                            "value": "a"
-                                                                                          }
-                                                                                        }
-                                                                                      }
-                                                                                    }
-                                                                                  ]
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          ]
-                                                                        }
-                                                                      ]
-                                                                    }
-                                                                  ]
-                                                                }
-                                                              }
-                                                            }
-                                                          ]
-                                                        }
-                                                      ]
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "stmt": [
-                                                    {
-                                                      "token": {
-                                                        "type": "NEWLINE",
-                                                        "value": "\n"
-                                                      }
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    ]
+                          "expression": {
+                            "term": {
+                              "term": {
+                                "factor": {
+                                  "token": {
+                                    "type": "FLOAT_NUMBER",
+                                    "value": "10"
                                   }
-                                ]
-                              },
-                              {
-                                "stmt": [
-                                  {
-                                    "stmt": [
-                                      {
-                                        "token": {
-                                          "type": "NEWLINE",
-                                          "value": "\n"
-                                        }
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "stmt": [
-                                      {
-                                        "return": {
-                                          "expression": {
-                                            "add": [
-                                              {
-                                                "expression": {
-                                                  "term": {
-                                                    "term": {
-                                                      "factor": {
-                                                        "token": {
-                                                          "type": "VARIABLE",
-                                                          "value": "a"
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              },
-                                              "+",
-                                              {
-                                                "expression": {
-                                                  "term": {
-                                                    "term": {
-                                                      "factor": {
-                                                        "token": {
-                                                          "type": "VARIABLE",
-                                                          "value": "b"
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            ]
-                                          }
-                                        }
-                                      }
-                                    ]
-                                  }
-                                ]
+                                }
                               }
-                            ]
+                            }
                           }
                         }
                       ]
@@ -403,24 +63,10 @@
             {
               "stmt": [
                 {
-                  "stmt": [
-                    {
-                      "token": {
-                        "type": "NEWLINE",
-                        "value": "\n"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "stmt": [
-                    {
-                      "token": {
-                        "type": "NEWLINE",
-                        "value": "\n"
-                      }
-                    }
-                  ]
+                  "token": {
+                    "type": "NEWLINE",
+                    "value": "\n"
+                  }
                 }
               ]
             }
@@ -429,14 +75,49 @@
         {
           "stmt": [
             {
-              "function": [
+              "while": [
                 {
-                  "params": [
-                    {
-                      "name": "n",
-                      "type": "int"
+                  "expression": {
+                    "term": {
+                      "term": {
+                        "factor": {
+                          "expression": {
+                            "compare": [
+                              {
+                                "expression": {
+                                  "term": {
+                                    "term": {
+                                      "factor": {
+                                        "token": {
+                                          "type": "VARIABLE",
+                                          "value": "a"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              ">",
+                              {
+                                "expression": {
+                                  "term": {
+                                    "term": {
+                                      "factor": {
+                                        "token": {
+                                          "type": "FLOAT_NUMBER",
+                                          "value": "0"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
                     }
-                  ]
+                  }
                 },
                 {
                   "block": {
@@ -444,341 +125,10 @@
                       {
                         "stmt": [
                           {
-                            "stmt": [
-                              {
-                                "stmt": [
-                                  {
-                                    "token": {
-                                      "type": "NEWLINE",
-                                      "value": "\n"
-                                    }
-                                  }
-                                ]
-                              },
-                              {
-                                "stmt": [
-                                  {
-                                    "assign": [
-                                      {
-                                        "type": "int",
-                                        "name": "d"
-                                      },
-                                      {
-                                        "expression": {
-                                          "term": {
-                                            "term": {
-                                              "factor": {
-                                                "token": {
-                                                  "type": "FLOAT_NUMBER",
-                                                  "value": "2"
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          },
-                          {
-                            "stmt": [
-                              {
-                                "while": [
-                                  {
-                                    "expression": {
-                                      "term": {
-                                        "term": {
-                                          "factor": {
-                                            "expression": {
-                                              "compare": [
-                                                {
-                                                  "expression": {
-                                                    "term": {
-                                                      "term": [
-                                                        {
-                                                          "term": {
-                                                            "factor": {
-                                                              "token": {
-                                                                "type": "VARIABLE",
-                                                                "value": "d"
-                                                              }
-                                                            }
-                                                          }
-                                                        },
-                                                        "*",
-                                                        {
-                                                          "term": {
-                                                            "factor": {
-                                                              "token": {
-                                                                "type": "VARIABLE",
-                                                                "value": "d"
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      ]
-                                                    }
-                                                  }
-                                                },
-                                                "<=",
-                                                {
-                                                  "expression": {
-                                                    "term": {
-                                                      "term": {
-                                                        "factor": {
-                                                          "token": {
-                                                            "type": "VARIABLE",
-                                                            "value": "n"
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "block": {
-                                      "stmt": [
-                                        {
-                                          "stmt": [
-                                            {
-                                              "stmt": [
-                                                {
-                                                  "token": {
-                                                    "type": "NEWLINE",
-                                                    "value": "\n"
-                                                  }
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "stmt": [
-                                                {
-                                                  "ifElse": [
-                                                    {
-                                                      "expression": {
-                                                        "term": {
-                                                          "term": {
-                                                            "factor": {
-                                                              "expression": {
-                                                                "compare": [
-                                                                  {
-                                                                    "expression": {
-                                                                      "term": {
-                                                                        "term": [
-                                                                          {
-                                                                            "term": {
-                                                                              "factor": {
-                                                                                "token": {
-                                                                                  "type": "VARIABLE",
-                                                                                  "value": "n"
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          },
-                                                                          "%",
-                                                                          {
-                                                                            "term": {
-                                                                              "factor": {
-                                                                                "token": {
-                                                                                  "type": "VARIABLE",
-                                                                                  "value": "d"
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          }
-                                                                        ]
-                                                                      }
-                                                                    }
-                                                                  },
-                                                                  "==",
-                                                                  {
-                                                                    "expression": {
-                                                                      "term": {
-                                                                        "term": {
-                                                                          "factor": {
-                                                                            "token": {
-                                                                              "type": "FLOAT_NUMBER",
-                                                                              "value": "0"
-                                                                            }
-                                                                          }
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                ]
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    },
-                                                    {
-                                                      "block": {
-                                                        "stmt": [
-                                                          {
-                                                            "stmt": [
-                                                              {
-                                                                "token": {
-                                                                  "type": "NEWLINE",
-                                                                  "value": "\n"
-                                                                }
-                                                              }
-                                                            ]
-                                                          },
-                                                          {
-                                                            "stmt": [
-                                                              {
-                                                                "stmt": [
-                                                                  {
-                                                                    "print": {
-                                                                      "args": [
-                                                                        "d"
-                                                                      ]
-                                                                    }
-                                                                  }
-                                                                ]
-                                                              },
-                                                              {
-                                                                "stmt": [
-                                                                  {
-                                                                    "reAssign": [
-                                                                      {
-                                                                        "variable": "n"
-                                                                      },
-                                                                      {
-                                                                        "expression": {
-                                                                          "term": {
-                                                                            "term": [
-                                                                              {
-                                                                                "term": {
-                                                                                  "factor": {
-                                                                                    "token": {
-                                                                                      "type": "VARIABLE",
-                                                                                      "value": "n"
-                                                                                    }
-                                                                                  }
-                                                                                }
-                                                                              },
-                                                                              "div",
-                                                                              {
-                                                                                "term": {
-                                                                                  "factor": {
-                                                                                    "token": {
-                                                                                      "type": "VARIABLE",
-                                                                                      "value": "d"
-                                                                                    }
-                                                                                  }
-                                                                                }
-                                                                              }
-                                                                            ]
-                                                                          }
-                                                                        }
-                                                                      }
-                                                                    ]
-                                                                  }
-                                                                ]
-                                                              }
-                                                            ]
-                                                          }
-                                                        ]
-                                                      }
-                                                    },
-                                                    {
-                                                      "else": {
-                                                        "block": {
-                                                          "stmt": [
-                                                            {
-                                                              "stmt": [
-                                                                {
-                                                                  "token": {
-                                                                    "type": "NEWLINE",
-                                                                    "value": "\n"
-                                                                  }
-                                                                }
-                                                              ]
-                                                            },
-                                                            {
-                                                              "stmt": [
-                                                                {
-                                                                  "reAssign": [
-                                                                    {
-                                                                      "variable": "d"
-                                                                    },
-                                                                    {
-                                                                      "expression": {
-                                                                        "add": [
-                                                                          {
-                                                                            "expression": {
-                                                                              "term": {
-                                                                                "term": {
-                                                                                  "factor": {
-                                                                                    "token": {
-                                                                                      "type": "VARIABLE",
-                                                                                      "value": "d"
-                                                                                    }
-                                                                                  }
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          },
-                                                                          "+",
-                                                                          {
-                                                                            "expression": {
-                                                                              "term": {
-                                                                                "term": {
-                                                                                  "factor": {
-                                                                                    "token": {
-                                                                                      "type": "FLOAT_NUMBER",
-                                                                                      "value": "1"
-                                                                                    }
-                                                                                  }
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          }
-                                                                        ]
-                                                                      }
-                                                                    }
-                                                                  ]
-                                                                }
-                                                              ]
-                                                            }
-                                                          ]
-                                                        }
-                                                      }
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "stmt": [
-                                            {
-                                              "token": {
-                                                "type": "NEWLINE",
-                                                "value": "\n"
-                                              }
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    }
-                                  }
-                                ]
-                              }
-                            ]
+                            "token": {
+                              "type": "NEWLINE",
+                              "value": "\n"
+                            }
                           }
                         ]
                       },
@@ -787,90 +137,44 @@
                           {
                             "stmt": [
                               {
-                                "stmt": [
+                                "reAssign": [
                                   {
-                                    "token": {
-                                      "type": "NEWLINE",
-                                      "value": "\n"
-                                    }
-                                  }
-                                ]
-                              },
-                              {
-                                "stmt": [
+                                    "variable": "a"
+                                  },
                                   {
-                                    "if": [
-                                      {
-                                        "expression": {
-                                          "term": {
+                                    "expression": {
+                                      "add": [
+                                        {
+                                          "expression": {
                                             "term": {
-                                              "factor": {
-                                                "expression": {
-                                                  "compare": [
-                                                    {
-                                                      "expression": {
-                                                        "term": {
-                                                          "term": {
-                                                            "factor": {
-                                                              "token": {
-                                                                "type": "VARIABLE",
-                                                                "value": "n"
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    },
-                                                    ">",
-                                                    {
-                                                      "expression": {
-                                                        "term": {
-                                                          "term": {
-                                                            "factor": {
-                                                              "token": {
-                                                                "type": "FLOAT_NUMBER",
-                                                                "value": "1"
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  ]
+                                              "term": {
+                                                "factor": {
+                                                  "token": {
+                                                    "type": "VARIABLE",
+                                                    "value": "a"
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "-",
+                                        {
+                                          "expression": {
+                                            "term": {
+                                              "term": {
+                                                "factor": {
+                                                  "token": {
+                                                    "type": "VARIABLE",
+                                                    "value": "b"
+                                                  }
                                                 }
                                               }
                                             }
                                           }
                                         }
-                                      },
-                                      {
-                                        "block": {
-                                          "stmt": [
-                                            {
-                                              "stmt": [
-                                                {
-                                                  "token": {
-                                                    "type": "NEWLINE",
-                                                    "value": "\n"
-                                                  }
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "stmt": [
-                                                {
-                                                  "print": {
-                                                    "args": [
-                                                      "n"
-                                                    ]
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        }
-                                      }
-                                    ]
+                                      ]
+                                    }
                                   }
                                 ]
                               }
@@ -879,9 +183,10 @@
                           {
                             "stmt": [
                               {
-                                "token": {
-                                  "type": "NEWLINE",
-                                  "value": "\n"
+                                "print": {
+                                  "args": [
+                                    "a"
+                                  ]
                                 }
                               }
                             ]
@@ -900,712 +205,10 @@
     {
       "stmt": [
         {
-          "stmt": [
-            {
-              "stmt": [
-                {
-                  "stmt": [
-                    {
-                      "token": {
-                        "type": "NEWLINE",
-                        "value": "\n"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "stmt": [
-                    {
-                      "token": {
-                        "type": "NEWLINE",
-                        "value": "\n"
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "stmt": [
-                {
-                  "function": [
-                    {
-                      "params": [
-                        {
-                          "name": "n",
-                          "type": "int"
-                        }
-                      ]
-                    },
-                    {
-                      "block": {
-                        "stmt": [
-                          {
-                            "stmt": [
-                              {
-                                "stmt": [
-                                  {
-                                    "stmt": [
-                                      {
-                                        "token": {
-                                          "type": "NEWLINE",
-                                          "value": "\n"
-                                        }
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "stmt": [
-                                      {
-                                        "stmt": [
-                                          {
-                                            "stmt": [
-                                              {
-                                                "assign": [
-                                                  {
-                                                    "type": "int",
-                                                    "name": "prev"
-                                                  },
-                                                  {
-                                                    "expression": {
-                                                      "term": {
-                                                        "term": {
-                                                          "factor": {
-                                                            "token": {
-                                                              "type": "FLOAT_NUMBER",
-                                                              "value": "1"
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                ]
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "stmt": [
-                                              {
-                                                "assign": [
-                                                  {
-                                                    "type": "int",
-                                                    "name": "current"
-                                                  },
-                                                  {
-                                                    "expression": {
-                                                      "term": {
-                                                        "term": {
-                                                          "factor": {
-                                                            "token": {
-                                                              "type": "FLOAT_NUMBER",
-                                                              "value": "1"
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                ]
-                                              }
-                                            ]
-                                          }
-                                        ]
-                                      },
-                                      {
-                                        "stmt": [
-                                          {
-                                            "assign": [
-                                              {
-                                                "type": "int",
-                                                "name": "temp"
-                                              },
-                                              {
-                                                "expression": {
-                                                  "term": {
-                                                    "term": {
-                                                      "factor": {
-                                                        "token": {
-                                                          "type": "FLOAT_NUMBER",
-                                                          "value": "0"
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            ]
-                                          }
-                                        ]
-                                      }
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "stmt": [
-                                  {
-                                    "while": [
-                                      {
-                                        "expression": {
-                                          "term": {
-                                            "term": {
-                                              "factor": {
-                                                "expression": {
-                                                  "compare": [
-                                                    {
-                                                      "expression": {
-                                                        "term": {
-                                                          "term": {
-                                                            "factor": {
-                                                              "token": {
-                                                                "type": "VARIABLE",
-                                                                "value": "n"
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    },
-                                                    ">",
-                                                    {
-                                                      "expression": {
-                                                        "term": {
-                                                          "term": {
-                                                            "factor": {
-                                                              "token": {
-                                                                "type": "FLOAT_NUMBER",
-                                                                "value": "0"
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      },
-                                      {
-                                        "block": {
-                                          "stmt": [
-                                            {
-                                              "stmt": [
-                                                {
-                                                  "token": {
-                                                    "type": "NEWLINE",
-                                                    "value": "\n"
-                                                  }
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "stmt": [
-                                                {
-                                                  "stmt": [
-                                                    {
-                                                      "stmt": [
-                                                        {
-                                                          "stmt": [
-                                                            {
-                                                              "reAssign": [
-                                                                {
-                                                                  "variable": "temp"
-                                                                },
-                                                                {
-                                                                  "expression": {
-                                                                    "add": [
-                                                                      {
-                                                                        "expression": {
-                                                                          "term": {
-                                                                            "term": {
-                                                                              "factor": {
-                                                                                "token": {
-                                                                                  "type": "VARIABLE",
-                                                                                  "value": "prev"
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          }
-                                                                        }
-                                                                      },
-                                                                      "+",
-                                                                      {
-                                                                        "expression": {
-                                                                          "term": {
-                                                                            "term": {
-                                                                              "factor": {
-                                                                                "token": {
-                                                                                  "type": "VARIABLE",
-                                                                                  "value": "current"
-                                                                                }
-                                                                              }
-                                                                            }
-                                                                          }
-                                                                        }
-                                                                      }
-                                                                    ]
-                                                                  }
-                                                                }
-                                                              ]
-                                                            }
-                                                          ]
-                                                        },
-                                                        {
-                                                          "stmt": [
-                                                            {
-                                                              "reAssign": [
-                                                                {
-                                                                  "variable": "prev"
-                                                                },
-                                                                {
-                                                                  "expression": {
-                                                                    "term": {
-                                                                      "term": {
-                                                                        "factor": {
-                                                                          "token": {
-                                                                            "type": "VARIABLE",
-                                                                            "value": "current"
-                                                                          }
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              ]
-                                                            }
-                                                          ]
-                                                        }
-                                                      ]
-                                                    },
-                                                    {
-                                                      "stmt": [
-                                                        {
-                                                          "reAssign": [
-                                                            {
-                                                              "variable": "current"
-                                                            },
-                                                            {
-                                                              "expression": {
-                                                                "term": {
-                                                                  "term": {
-                                                                    "factor": {
-                                                                      "token": {
-                                                                        "type": "VARIABLE",
-                                                                        "value": "temp"
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              }
-                                                            }
-                                                          ]
-                                                        }
-                                                      ]
-                                                    }
-                                                  ]
-                                                },
-                                                {
-                                                  "stmt": [
-                                                    {
-                                                      "reAssign": [
-                                                        {
-                                                          "variable": "n"
-                                                        },
-                                                        {
-                                                          "expression": {
-                                                            "add": [
-                                                              {
-                                                                "expression": {
-                                                                  "term": {
-                                                                    "term": {
-                                                                      "factor": {
-                                                                        "token": {
-                                                                          "type": "VARIABLE",
-                                                                          "value": "n"
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              },
-                                                              "-",
-                                                              {
-                                                                "expression": {
-                                                                  "term": {
-                                                                    "term": {
-                                                                      "factor": {
-                                                                        "token": {
-                                                                          "type": "FLOAT_NUMBER",
-                                                                          "value": "1"
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              }
-                                                            ]
-                                                          }
-                                                        }
-                                                      ]
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        }
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          },
-                          {
-                            "stmt": [
-                              {
-                                "stmt": [
-                                  {
-                                    "token": {
-                                      "type": "NEWLINE",
-                                      "value": "\n"
-                                    }
-                                  }
-                                ]
-                              },
-                              {
-                                "stmt": [
-                                  {
-                                    "return": {
-                                      "expression": {
-                                        "term": {
-                                          "term": {
-                                            "factor": {
-                                              "token": {
-                                                "type": "VARIABLE",
-                                                "value": "current"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "stmt": [
-            {
-              "stmt": [
-                {
-                  "stmt": [
-                    {
-                      "stmt": [
-                        {
-                          "stmt": [
-                            {
-                              "stmt": [
-                                {
-                                  "stmt": [
-                                    {
-                                      "token": {
-                                        "type": "NEWLINE",
-                                        "value": "\n"
-                                      }
-                                    }
-                                  ]
-                                },
-                                {
-                                  "stmt": [
-                                    {
-                                      "token": {
-                                        "type": "NEWLINE",
-                                        "value": "\n"
-                                      }
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "stmt": [
-                                {
-                                  "token": {
-                                    "type": "NEWLINE",
-                                    "value": "\n"
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "stmt": [
-                            {
-                              "token": {
-                                "type": "NEWLINE",
-                                "value": "\n"
-                              }
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "stmt": [
-                        {
-                          "stmt": [
-                            {
-                              "assign": [
-                                {
-                                  "type": "int",
-                                  "name": "a"
-                                },
-                                {
-                                  "expression": {
-                                    "term": {
-                                      "term": {
-                                        "factor": {
-                                          "token": {
-                                            "type": "FLOAT_NUMBER",
-                                            "value": "82"
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "stmt": [
-                            {
-                              "assign": [
-                                {
-                                  "type": "int",
-                                  "name": "b"
-                                },
-                                {
-                                  "expression": {
-                                    "term": {
-                                      "term": {
-                                        "factor": {
-                                          "token": {
-                                            "type": "FLOAT_NUMBER",
-                                            "value": "41"
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "stmt": [
-                    {
-                      "token": {
-                        "type": "NEWLINE",
-                        "value": "\n"
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "stmt": [
-                {
-                  "stmt": [
-                    {
-                      "stmt": [
-                        {
-                          "stmt": [
-                            {
-                              "stmt": [
-                                {
-                                  "stmt": [
-                                    {
-                                      "stmt": [
-                                        {
-                                          "stmt": [
-                                            {
-                                              "stmt": [
-                                                {
-                                                  "print": [
-                                                    "'Euclidean'"
-                                                  ]
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "stmt": [
-                                                {
-                                                  "assign": [
-                                                    {
-                                                      "type": "int",
-                                                      "name": "result"
-                                                    },
-                                                    {
-                                                      "expression": {
-                                                        "term": {
-                                                          "term": {
-                                                            "callFunction": {
-                                                              "name": "euclidean",
-                                                              "args": [
-                                                                "a",
-                                                                "b"
-                                                              ]
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  ]
-                                                }
-                                              ]
-                                            }
-                                          ]
-                                        },
-                                        {
-                                          "stmt": [
-                                            {
-                                              "print": {
-                                                "args": [
-                                                  "result"
-                                                ]
-                                              }
-                                            }
-                                          ]
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "stmt": [
-                                        {
-                                          "print": [
-                                            "'Factorization'"
-                                          ]
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "stmt": [
-                                    {
-                                      "reAssign": [
-                                        {
-                                          "variable": "result"
-                                        },
-                                        {
-                                          "expression": {
-                                            "term": {
-                                              "term": {
-                                                "callFunction": {
-                                                  "name": "factor",
-                                                  "args": [
-                                                    "a"
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "stmt": [
-                                {
-                                  "print": {
-                                    "args": [
-                                      "result"
-                                    ]
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "stmt": [
-                            {
-                              "print": [
-                                "'Fibonacci'"
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "stmt": [
-                        {
-                          "reAssign": [
-                            {
-                              "variable": "result"
-                            },
-                            {
-                              "expression": {
-                                "term": {
-                                  "term": {
-                                    "callFunction": {
-                                      "name": "fibonacci",
-                                      "args": [
-                                        "b"
-                                      ]
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "stmt": [
-                    {
-                      "print": {
-                        "args": [
-                          "result"
-                        ]
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+          "token": {
+            "type": "NEWLINE",
+            "value": "\n"
+          }
         }
       ]
     }
