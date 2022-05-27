@@ -2,6 +2,9 @@ import { CodeBuffer } from "./translator/translator"
 import { Variable } from "./syntax/models"
 import { MemoryBuffer, Register, EDX, EBX, ECX } from "./syntax/models"
 
+let lastLabelId = 0
+let lastTempStringId = 0
+
 export class Env {
     public name: string
     public parent: Env | null
@@ -15,8 +18,6 @@ export class Env {
         EBX,
         ECX
     ]
-    private lastLabelId = 0
-    private lastTempStringId = 0
 
     constructor (name: string = '', parent: Env = null) {
         this.name = name
@@ -28,8 +29,8 @@ export class Env {
     }
 
     public newLabel(type = 'lb'): string {
-        this.lastLabelId += 1
-        this.labels[type] = this.getNamePrefix() + type + this.lastLabelId
+        lastLabelId += 1
+        this.labels[type] = this.getNamePrefix() + type + lastLabelId
         return this.labels[type]
     }
 
@@ -61,8 +62,8 @@ export class Env {
     }
 
     public saveString(value: string): string {
-        this.lastTempStringId += 1
-        let tempName = this.getNamePrefix() + `ts__${this.lastTempStringId}`
+        lastTempStringId += 1
+        let tempName = this.getNamePrefix() + `ts__${lastTempStringId}`
         CodeBuffer.emitData(`${tempName} db ${value}, 0\n`)
         return tempName;
     }
@@ -133,6 +134,7 @@ export class Env {
     }
 
     public getOrCreate(envName: string): Env {
+        return new Env(envName, this)
         if (this.children[envName]) {
             return this.children[envName]
         }

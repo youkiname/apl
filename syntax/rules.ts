@@ -69,6 +69,7 @@ export const RULES = [
 
     new Rule(["CallFunction"], args => new s.Term(args[0] as s.Expression, null, null)),
     new Rule(["Term", "STAR", "Term"], args => new s.Term(args[0] as s.Expression, "*", args[2] as s.Statement)),
+    new Rule(["Expression", "STAR", "Expression"], args => new s.Term(args[0] as s.Expression, "*", args[2] as s.Statement)),
     new Rule(["Term", "SLASH", "Term"], args => new s.Term(args[0] as s.Expression, "/", args[2] as s.Statement)),
     new Rule(["Term", "%", "Term"], args => new s.Term(args[0] as s.Expression, "%", args[2] as s.Statement)),
     new Rule(["Term", "DIV", "Term"], args => new s.Term(args[0] as s.Expression, "div", args[2] as s.Statement)),
@@ -109,6 +110,6 @@ export const RULES = [
     new Rule(["Print"], args => new s.Statement(args)),
     new Rule(["PrintString"], args => new s.Statement(args)),
     new Rule(["Statement", "Statement"], args => new s.Statement(args)),
-    new Rule(["Expression", "NEWLINE"], args => new s.Statement(args)),
+    // new Rule(["Expression", "NEWLINE"], args => new s.Statement(args)),
     new Rule(["NEWLINE"], args => new s.Statement(args)),
 ]

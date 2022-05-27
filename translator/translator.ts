@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 
 export class CodeBuffer {
     private static code: string = ""
-    private static data: string = ""
+    private static data: { [key: string]: string } = {}
 
     public static mov(op1: MemoryBuffer, op2: MemoryBuffer) {
         CodeBuffer.emit(`mov ${op1.getOperandName()}, ${op2.getOperandName()}\n`)
@@ -60,7 +60,8 @@ export class CodeBuffer {
     }
 
     public static emitData(s: string) {
-        this.data += s
+        const name = s.split(' ', 1)[0]
+        this.data[name] = s.slice(name.length)
     }
 
     public static get() {
@@ -68,7 +69,11 @@ export class CodeBuffer {
     }
 
     public static getDataSection() {
-        return this.data
+        let result = ""
+        for (const [key, value] of Object.entries(this.data)) {
+            result += `${key} ${value}\n`
+        }
+        return result
     }
 }
 
