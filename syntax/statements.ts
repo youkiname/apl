@@ -68,6 +68,18 @@ export class Statement {
         return null
     }
 
+    public isEmpty(): boolean {
+        if (this.args.length == 0) {
+            return false
+        }
+        for (let arg of this.args) {
+            if (!arg.isEmpty()) {
+                return false
+            }
+        }
+        return true
+    }
+
     public getTree(): object {
         return {
             "stmt": this.args.map(arg => arg.getTree())
@@ -596,6 +608,10 @@ export class Block extends Statement {
         return null;
     }
 
+    public isEmpty(): boolean {
+        return this.statement.isEmpty()
+    }
+
     public getTree(): object {
         return {
             'block': this.statement.getTree()
@@ -699,6 +715,9 @@ export class While extends Statement {
     }
 
     public eval() {
+        // if (this.block.isEmpty()) {
+        //     return
+        // }
         const label = env.newLabel('whilelb')
         CodeBuffer.comment("---WHILE---")
         CodeBuffer.emit(`${label}:\n`)

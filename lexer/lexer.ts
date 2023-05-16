@@ -90,6 +90,10 @@ export class Token {
         return this.type.name
     }
 
+    public isEmpty(): boolean {
+        return this.type.name == "NEWLINE"
+    }
+
     public getTree(): object {
         return {
             'token': {
